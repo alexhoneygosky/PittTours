@@ -42,7 +42,8 @@ create table Flight(
 	weekly_schedule varchar2(7),
 	constraint flight_pk primary key(flight_number),
 	constraint flight_fk1 foreign key (plane_type) references Plane(plane_type),
-	constraint flight_fk2 foreign key (airline_id) references Airline(airline_id)
+	constraint flight_fk2 foreign key (airline_id) references Airline(airline_id),
+	constraint flight_chk check(departure_city != arrival_city)
 );
 
 create table Price(
@@ -52,7 +53,8 @@ create table Price(
 	high_price int not null,
 	low_price int not null,
 	constraint price_pk primary key(departure_city,arrival_city),
-	constraint price_fk foreign key(airline_id) references Airline(airline_id)
+	constraint price_fk foreign key(airline_id) references Airline(airline_id),
+	constraint price_chk check(high_price >= low_price)
 );
 
 --credit number is not unique because a each member of a family may have an account and use
