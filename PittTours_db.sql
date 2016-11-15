@@ -28,7 +28,7 @@ create table Plane(
 	year int,
 	owner_id varchar2(5),
 	constraint plane_pk primary key (plane_type),
-	constraint plane_fk foreign key (owner_id) references Airline(airline_id)
+	constraint plane_fk foreign key (owner_id) references Airline(airline_id) on delete cascade
 );
 
 create table Flight(
@@ -41,8 +41,8 @@ create table Flight(
 	arrival_time varchar2(4) not null,
 	weekly_schedule varchar2(7),
 	constraint flight_pk primary key(flight_number),
-	constraint flight_fk1 foreign key (plane_type) references Plane(plane_type),
-	constraint flight_fk2 foreign key (airline_id) references Airline(airline_id),
+	constraint flight_fk1 foreign key (plane_type) references Plane(plane_type) on delete cascade,
+	constraint flight_fk2 foreign key (airline_id) references Airline(airline_id) on delete cascade,
 	constraint flight_chk check(departure_city != arrival_city)
 );
 
@@ -53,7 +53,7 @@ create table Price(
 	high_price int not null,
 	low_price int not null,
 	constraint price_pk primary key(departure_city,arrival_city),
-	constraint price_fk foreign key(airline_id) references Airline(airline_id),
+	constraint price_fk foreign key(airline_id) references Airline(airline_id) on delete cascade,
 	constraint price_chk check(high_price >= low_price)
 );
 
@@ -84,7 +84,7 @@ create table Reservation(
 	reservation_date date not null,
 	ticketed varchar2(1) not null,
 	constraint reservation_pk primary key(reservation_number),
-	constraint customer_fk foreign key(cid) references Customer(cid),
+	constraint customer_fk foreign key(cid) references Customer(cid) on delete cascade,
 	constraint check_ticketed check (ticketed = 'Y' or ticketed = 'N')
 );
 
@@ -95,8 +95,8 @@ create table Reservation_detail(
 	flight_date date not null,
 	leg int,
 	constraint reservation_detail_pk primary key(reservation_number,leg),
-	constraint reservation_detail_fk1 foreign key(reservation_number) references Reservation(reservation_number),
-	constraint reservation_detail_fk2 foreign key(flight_number) references Flight(flight_number)
+	constraint reservation_detail_fk1 foreign key(reservation_number) references Reservation(reservation_number)on delete cascade,
+	constraint reservation_detail_fk2 foreign key(flight_number) references Flight(flight_number) on delete cascade
 );
 
 create table Our_date(
