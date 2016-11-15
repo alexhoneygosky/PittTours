@@ -73,7 +73,7 @@ create table Customer(
 	email varchar2(30),
 	frequent_miles varchar2(5),
 	constraint customer_pk primary key(cid),
-	constraint check_saltuation check (salutation = 'Mrs' or salutation = 'Mr' or salutation = 'Ms')
+	constraint check_salutation check (salutation = 'Mrs' or salutation = 'Mr' or salutation = 'Ms')
 );
 
 create table Reservation(
