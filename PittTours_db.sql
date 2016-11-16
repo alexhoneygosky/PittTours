@@ -27,7 +27,7 @@ create table Plane(
 	last_service date,
 	year int,
 	owner_id varchar2(5),
-	constraint plane_pk primary key (plane_type),
+	constraint plane_pk primary key (plane_type,owner_id),
 	constraint plane_fk foreign key (owner_id) references Airline(airline_id) on delete cascade
 );
 
@@ -41,7 +41,7 @@ create table Flight(
 	arrival_time varchar2(4) not null,
 	weekly_schedule varchar2(7),
 	constraint flight_pk primary key(flight_number),
-	constraint flight_fk1 foreign key (plane_type) references Plane(plane_type) on delete cascade,
+	constraint flight_fk1 foreign key (plane_type,airline_id) references Plane(plane_type,owner_id) on delete cascade,
 	constraint flight_fk2 foreign key (airline_id) references Airline(airline_id) on delete cascade,
 	constraint flight_chk check(departure_city != arrival_city)
 );
@@ -83,6 +83,8 @@ create table Reservation(
 	credit_card_num varchar2(16) not null,
 	reservation_date date not null,
 	ticketed varchar2(1) not null,
+	start_city varchar2(3) not null,
+	end_city varchar2(3) not null,
 	constraint reservation_pk primary key(reservation_number),
 	constraint customer_fk foreign key(cid) references Customer(cid) on delete cascade,
 	constraint check_ticketed check (ticketed = 'Y' or ticketed = 'N')
