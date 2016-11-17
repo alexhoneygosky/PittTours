@@ -76,6 +76,7 @@ create table Customer(
 	constraint check_salutation check (salutation = 'Mrs' or salutation = 'Mr' or salutation = 'Ms')
 );
 
+--Assumption: Reservation date is the date the reservation was booked, not the date of the trip
 create table Reservation(
 	reservation_number varchar2(5),
 	cid varchar2(9),
