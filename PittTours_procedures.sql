@@ -49,7 +49,7 @@ END;
 SHOW ERRORS;
 
 --Change price
-create or replace procedure change_price(depart IN varchar2, arrival IN varchar2, airline IN varchar2,
+create or replace procedure change_price(depart IN varchar2, arrival IN varchar2,
 high IN number, low IN number)
 as
 BEGIN
