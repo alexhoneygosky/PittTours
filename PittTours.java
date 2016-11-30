@@ -1,12 +1,15 @@
 import java.io.*;
 import java.util.*;
+import java.util.Date;
 import java.text.*;
 import java.sql.*;
 import oracle.jdbc.driver.OracleDriver;
 
 public class PittTours {
-    public static void newCustomer(Scanner s, Statement statement) {
+    public static void addNewCustomer(Scanner s, Statement statement) {
         ResultSet resultSet;
+
+        Scanner tempScanner = new Scanner(System.in).useDelimiter(" ");
 
         System.out.println("---------------");
         System.out.print("Title (Mr, Ms, Mrs): ");
@@ -15,11 +18,8 @@ public class PittTours {
         String fname = s.next();
         System.out.print("Last Name: ");
         String lname = s.next();
-        System.out.print("Address (Street Number<enter>, Street Name<enter>, Street Type (St, Ln, Blvd, etc.)<enter>: ");
-        String streetNum = s.next();
-        String streetName = s.next();
-        String streetType = s.next();
-        String street = streetNum + " " + streetName + " " + streetType;
+        System.out.print("Street Address: ");
+        String street = tempScanner.nextLine();
         System.out.print("City: ");
         String city = s.next();
         System.out.print("State: ");
@@ -328,6 +328,501 @@ public class PittTours {
 		}
 	}
 	
+    public static void showCustomerInfo(Scanner s, Statement statement) {
+        ResultSet resultSet;
+
+        System.out.println("---------------");
+        System.out.print("Customer First Name: ");
+        String fname = s.next();
+        System.out.print("Customer Last Name: ");
+        String lname = s.next();
+
+        String getCustomerInfoQuery = "SELECT salutation, first_name, last_name, street, city, state, phone, email, frequent_miles FROM CUSTOMER WHERE "
+            + "first_name = '" + fname + "' AND last_name = '" + lname + "'";
+
+        try {
+            resultSet = statement.executeQuery(getCustomerInfoQuery);
+
+            resultSet.next();
+            System.out.println("Customer Information");
+            System.out.println("Salutation: " + resultSet.getString("salutation"));
+            System.out.println("First Name: " + resultSet.getString("first_name"));
+            System.out.println("Last Name: " + resultSet.getString("last_name"));
+            System.out.println("Street: " + resultSet.getString("street"));
+            System.out.println("City: " + resultSet.getString("city"));
+            System.out.println("State: " + resultSet.getString("state"));
+            System.out.println("Phone: " + resultSet.getString("phone"));
+            System.out.println("Email: " + resultSet.getString("email"));
+            System.out.println("Frequent Miles: " + resultSet.getString("frequent_miles"));                                    
+        } catch(SQLException sqle) {
+            System.out.println("Result set failed");
+            System.out.println(sqle.toString());
+            sqle.printStackTrace();
+        }  
+    }
+
+    public static void findFlightPriceBetweenCities(Scanner s, Statement statement) {
+        ResultSet resultSet;
+
+        System.out.println("---------------");
+        System.out.print("First City (PIT, MCO, JFK, etc.): ");
+        String cityOne = s.next();
+        System.out.print("Second City (PIT, MCO, JFK, etc.): ");
+        String cityTwo = s.next();
+
+        String findFlightPricesBetweenCitiesQuery = "SELECT departure_city, arrival_city, high_price, low_price FROM PRICE WHERE "
+        + "(departure_city = '" + cityOne + "' AND arrival_city = '" + cityTwo + "') OR (departure_city = '" + cityTwo + "' AND arrival_city = '" + cityOne 
+        + "')";
+
+        try {
+            resultSet = statement.executeQuery(findFlightPricesBetweenCitiesQuery);
+
+            System.out.println("Departure City | Arrival City | High Price | Low Price");
+            while(resultSet.next() != false) {
+                System.out.println("\t" + resultSet.getString("departure_city") + "\t\t" + resultSet.getString("arrival_city") + "\t  " 
+                    + resultSet.getString("high_price") + "\t\t" + resultSet.getString("low_price"));
+            }
+
+            System.out.println("NOTE: If you take a round trip flight in the same day, the high price is used.\nOtherwise, the low price is used");
+        } catch(SQLException sqle) {
+            System.out.println("Result set failed");
+            System.out.println(sqle.toString());
+            sqle.printStackTrace();            
+        }
+    }
+
+    public static void findAllRoutesBetweenCities(Scanner s, Statement statement) {
+        ResultSet resultSet;
+
+        System.out.println("---------------");
+        System.out.print("First City (PIT, MCO, JFK, etc.): ");
+        String cityOne = s.next();
+        System.out.print("Second City (PIT, MCO, JFK, etc.): ");
+        String cityTwo = s.next();
+
+        String findAllDirectRoutesBetweenCitiesQuery = "SELECT flight_number, departure_city, arrival_city, departure_time, arrival_time FROM FLIGHT "
+            + "WHERE departure_city = '" + cityOne + "' AND arrival_city = '" + cityTwo + "'";
+            
+        String findAllConnectingRoutesBetweenCitiesQuery = "SELECT flight_number, departure_city, arrival_city, departure_time, arrival_time, weekly_schedule "
+            + "FROM FLIGHT WHERE (departure_city = '" + cityOne + "' AND arrival_city = '" + cityTwo + "') OR departure_city = '" + cityTwo + "'";
+
+        try {
+            resultSet = statement.executeQuery(findAllDirectRoutesBetweenCitiesQuery);
+
+            System.out.println("Direct Routes");
+            System.out.println("Flight Number | Departure City | Arrival City | Departure Time | Arrival Time");
+            while(resultSet.next() != false) {
+                System.out.println("\t" + resultSet.getString("flight_number") + "\t\t" + resultSet.getString("departure_city") + "\t\t"
+                    + resultSet.getString("arrival_city") + "\t\t" + resultSet.getString("departure_time") + "\t\t" + resultSet.getString("arrival_time"));
+            }
+
+            resultSet = statement.executeQuery(findAllConnectingRoutesBetweenCitiesQuery);
+            System.out.println();
+            System.out.println("Connecting Routes (including first leg)");
+            System.out.println("Flight Number | Departure City | Arrival City | Departure Time | Arrival Time");
+
+            int firstLegArrivalTime = 0;
+            String firstLegDaysOfOperation = "";
+
+            while(resultSet.next() != false) {
+                if(resultSet.getString("departure_city").equals(cityOne)) {
+                    firstLegArrivalTime = Integer.parseInt(resultSet.getString("arrival_time"));
+                    firstLegDaysOfOperation = resultSet.getString("weekly_schedule");
+
+                    System.out.println(firstLegDaysOfOperation);
+
+                    System.out.println("\t" + resultSet.getString("flight_number") + "\t\t" + resultSet.getString("departure_city") + "\t\t"
+                        + resultSet.getString("arrival_city") + "\t\t" + resultSet.getString("departure_time") + "\t\t" 
+                        + resultSet.getString("arrival_time"));                    
+                }
+                
+                else if(!resultSet.getString("departure_city").equals(cityOne)) {
+                    int timeDifference = Integer.parseInt(resultSet.getString("departure_time")) - firstLegArrivalTime;
+                    String currentRowDaysOfOperation = resultSet.getString("weekly_schedule");
+                    int daysOverlap = 0;
+
+                    for(int i = 0; i < firstLegDaysOfOperation.length(); i++) {
+                        if(currentRowDaysOfOperation.charAt(i) == firstLegDaysOfOperation.charAt(i) && firstLegDaysOfOperation.charAt(i) != '-') {
+                            daysOverlap++;
+                        }
+                    }
+
+                    if(timeDifference >= 100 && daysOverlap >= 1) {
+                        System.out.println("\t" + resultSet.getString("flight_number") + "\t\t" + resultSet.getString("departure_city") + "\t\t"
+                            + resultSet.getString("arrival_city") + "\t\t" + resultSet.getString("departure_time") + "\t\t" 
+                            + resultSet.getString("arrival_time"));
+                    }
+                }
+            }            
+        } catch(SQLException sqle) {
+            System.out.println("Result set failed");
+            System.out.println(sqle.toString());
+            sqle.printStackTrace();            
+        }        
+    }
+
+    public static void findAirlineRoutesBetweenCities(Scanner s, Statement statement) {
+        ResultSet resultSet;
+        Scanner tempScanner = new Scanner(System.in).useDelimiter(" ");
+
+        System.out.println("---------------");
+        System.out.print("First City (PIT, MCO, JFK, etc.): ");
+        String cityOne = s.next();
+        System.out.print("Second City (PIT, MCO, JFK, etc.): ");
+        String cityTwo = s.next();
+        System.out.print("Airline Name: ");
+        String airline = tempScanner.nextLine();
+
+        String findAirlineIdQuery = "SELECT airline_id FROM AIRLINE WHERE airline_name = '" + airline + "'";
+
+        try {
+            resultSet = statement.executeQuery(findAirlineIdQuery);
+
+            resultSet.next();
+            String airlineId = resultSet.getString("airline_id");
+
+            String findAirlineDirectRoutesBetweenCitiesQuery = "SELECT airline_id, flight_number, departure_city, arrival_city, departure_time, arrival_time FROM FLIGHT "
+                + "WHERE departure_city = '" + cityOne + "' AND arrival_city = '" + cityTwo + "' AND airline_id = '" + airlineId + "'";
+            
+            String findAirlineConnectingRoutesBetweenCitiesQuery = "SELECT airline_id, flight_number, departure_city, arrival_city, departure_time, arrival_time, weekly_schedule "
+                + "FROM FLIGHT WHERE ((departure_city = '" + cityOne + "' AND arrival_city = '" + cityTwo + "') OR departure_city = '" + cityTwo + "') AND airline_id = '"
+                + airlineId + "'";
+            
+            resultSet = statement.executeQuery(findAirlineDirectRoutesBetweenCitiesQuery);
+
+            System.out.println("Direct Routes");
+            System.out.println("Airline Id | Flight Number | Departure City | Arrival City | Departure Time | Arrival Time");
+
+            while(resultSet.next() != false) {
+                System.out.println("\t" + resultSet.getString("airline_id") + "\t\t" + resultSet.getString("flight_number") + "\t\t" 
+                    + resultSet.getString("departure_city") + "\t\t" + resultSet.getString("arrival_city") + "\t\t" 
+                    + resultSet.getString("departure_time") + "\t\t" + resultSet.getString("arrival_time"));                
+            }
+
+            resultSet = statement.executeQuery(findAirlineConnectingRoutesBetweenCitiesQuery);
+
+            System.out.println();
+            System.out.println("Connecting Routes (including first leg)");
+            System.out.println("Airline Id | Flight Number | Departure City | Arrival City | Departure Time | Arrival Time");
+
+            int firstLegArrivalTime = 0;
+            String firstLegDaysOfOperation = "";
+
+            while(resultSet.next() != false) {
+                if(resultSet.getString("departure_city").equals(cityOne)) {
+                    firstLegArrivalTime = Integer.parseInt(resultSet.getString("arrival_time"));
+                    firstLegDaysOfOperation = resultSet.getString("weekly_schedule");
+
+                    System.out.println(firstLegDaysOfOperation);
+
+                    System.out.println("\t" + resultSet.getString("airline_id") + "\t\t" + resultSet.getString("flight_number") + "\t\t" 
+                        + resultSet.getString("departure_city") + "\t\t" + resultSet.getString("arrival_city") + "\t\t" 
+                        + resultSet.getString("departure_time") + "\t\t" + resultSet.getString("arrival_time"));     
+                }
+                
+                else if(!resultSet.getString("departure_city").equals(cityOne)) {
+                    int timeDifference = Integer.parseInt(resultSet.getString("departure_time")) - firstLegArrivalTime;
+                    String currentRowDaysOfOperation = resultSet.getString("weekly_schedule");
+                    int daysOverlap = 0;
+
+                    for(int i = 0; i < firstLegDaysOfOperation.length(); i++) {
+                        if(currentRowDaysOfOperation.charAt(i) == firstLegDaysOfOperation.charAt(i) && firstLegDaysOfOperation.charAt(i) != '-') {
+                            daysOverlap++;
+                        }
+                    }
+
+                    if(timeDifference >= 100 && daysOverlap >= 1) {
+                        System.out.println("\t" + resultSet.getString("airline_id") + "\t\t" + resultSet.getString("flight_number") + "\t\t" 
+                            + resultSet.getString("departure_city") + "\t\t" + resultSet.getString("arrival_city") + "\t\t" 
+                            + resultSet.getString("departure_time") + "\t\t" + resultSet.getString("arrival_time"));     
+                    }
+                }
+            }      
+        } catch(SQLException sqle) {
+            System.out.println("Result set failed");
+            System.out.println(sqle.toString());
+            sqle.printStackTrace();             
+        }
+    }
+
+    //does not work completely
+    public static void findAllRoutesBetweenCitiesWithAvailableSeats(Scanner s, Statement statement) {
+        ResultSet resultSet, seatsTakenResultSet;
+
+        System.out.println("---------------");
+        System.out.print("First City (PIT, MCO, JFK, etc.): ");
+        String cityOne = s.next();
+        System.out.print("Second City (PIT, MCO, JFK, etc.): ");
+        String cityTwo = s.next();
+        System.out.print("Date: ");
+        String stringDate = s.next();
+
+        SimpleDateFormat formatter = new SimpleDateFormat("mm-dd-yyyy");
+
+        try {
+            Date date = formatter.parse(stringDate);
+
+            Calendar c = Calendar.getInstance();
+            c.setTime(date);
+            int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
+
+            String findAllFlightsOnDate = "";
+            String flightNum = "";
+            int planeCapacity = 0;
+            String resFlightNum = "";
+            int bookedSeats = 0;
+
+            if(dayOfWeek == 0) {
+                findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+                    + " AND f.weekly_schedule LIKE 'S______'";
+            }
+            else if(dayOfWeek == 1) {
+                findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+                    + " AND f.weekly_schedule LIKE '_M_____'";            
+            }
+            else if(dayOfWeek == 2) {
+                findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+                    + " AND f.weekly_schedule LIKE '__T____'";               
+            }
+            else if(dayOfWeek == 3) {
+                findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+                    + " AND f.weekly_schedule LIKE '___W___'";               
+            }
+            else if(dayOfWeek == 4) {
+                findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+                    + " AND f.weekly_schedule LIKE '____T__'";               
+            }
+            else if(dayOfWeek == 5) {
+                findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+                    + " AND f.weekly_schedule LIKE '_____F_'";               
+            }
+            else if(dayOfWeek == 6) {
+                findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+                    + " AND f.weekly_schedule LIKE '______S'";               
+            }
+
+            try {
+                resultSet = statement.executeQuery(findAllFlightsOnDate);
+
+                while(resultSet.next() != false) {
+                    //System.out.println(resultSet.getString("flight_number") + " " + resultSet.getString("plane_type") + " " + resultSet.getString("plane_capacity") + " " + resultSet.getString("weekly_schedule"));
+                    String findAllSeatsTakenPerFlightQuery = "SELECT flight_number, COUNT(flight_number) FROM RESERVATION_DETAIL rd GROUP BY rd.flight_number";
+
+                    seatsTakenResultSet = statement.executeQuery(findAllSeatsTakenPerFlightQuery);
+
+                    while(seatsTakenResultSet.next() != false) {
+                        if(resultSet.getString("flight_number").equals(seatsTakenResultSet.getString("flight_number")) && Integer.parseInt(seatsTakenResultSet.getString("taken_seats")) < Integer.parseInt(resultSet.getString("plane_capacity"))) {
+                            System.out.println(resultSet.getString("flight_number") + " " + resultSet.getString("departure_city") + " " + resultSet.getString("arrival_city") + " " + resultSet.getString("departure_time") + " " + resultSet.getString("arrival_time"));
+                        }
+
+                        //System.out.println(seatsTakenResultSet.getString("flight_number") + " " + seatsTakenResultSet.getString("taken_seats"));
+                    }                
+                }
+            }  catch(SQLException sqle) {
+                System.out.println("Result set failed");
+                System.out.println(sqle.toString());
+                sqle.printStackTrace();             
+            }            
+        } catch(ParseException pe) {
+            System.out.println("Parse exception.");
+            System.exit(1);
+        }
+    }
+
+    //does not work completely
+    public static void findAirlineRoutesBetweenCitiesWithAvailableSeats(Scanner s, Statement statement) {
+        ResultSet resultSet, seatsTakenResultSet;
+        Scanner tempScanner = new Scanner(System.in).useDelimiter(" ");
+
+        System.out.println("---------------");
+        System.out.print("First City (PIT, MCO, JFK, etc.): ");
+        String cityOne = s.next();
+        System.out.print("Second City (PIT, MCO, JFK, etc.): ");
+        String cityTwo = s.next();
+        System.out.print("Airline: ");
+        String airline = tempScanner.nextLine();
+        System.out.print("Date: ");
+        String stringDate = s.next();
+
+        SimpleDateFormat formatter = new SimpleDateFormat("mm-dd-yyyy");
+
+        String findAirlineIdQuery = "SELECT airline_id FROM AIRLINE WHERE airline_name = '" + airline + "'";
+
+        try {
+            resultSet = statement.executeQuery(findAirlineIdQuery);
+
+            resultSet.next();
+            String airlineId = resultSet.getString("airline_id");            
+
+            try {
+                Date date = formatter.parse(stringDate);
+
+                Calendar c = Calendar.getInstance();
+                c.setTime(date);
+                int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
+
+
+
+                String findAllFlightsOnDate = "";
+                String flightNum = "";
+                int planeCapacity = 0;
+                String resFlightNum = "";
+                int bookedSeats = 0;
+
+                if(dayOfWeek == 0) {
+                    findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+                        + " AND f.airline_id = '" + airlineId + "' AND f.weekly_schedule LIKE 'S______'";
+                }
+                else if(dayOfWeek == 1) {
+                    findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+                        + " AND f.airline_id = '" + airlineId + "' AND f.weekly_schedule LIKE '_M_____'";            
+                }
+                else if(dayOfWeek == 2) {
+                    findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+                        + " AND f.airline_id = '" + airlineId + "' AND f.weekly_schedule LIKE '__T____'";               
+                }
+                else if(dayOfWeek == 3) {
+                    findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+                        + " AND f.airline_id = '" + airlineId + "' AND f.weekly_schedule LIKE '___W___'";               
+                }
+                else if(dayOfWeek == 4) {
+                    findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+                        + " AND f.airline_id = '" + airlineId + "' AND f.weekly_schedule LIKE '____T__'";               
+                }
+                else if(dayOfWeek == 5) {
+                    findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+                        + " AND f.airline_id = '" + airlineId + "' AND f.weekly_schedule LIKE '_____F_'";               
+                }
+                else if(dayOfWeek == 6) {
+                    findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+                        + " AND f.airline_id = '" + airlineId + "' AND f.weekly_schedule LIKE '______S'";               
+                }
+
+                try {
+                    resultSet = statement.executeQuery(findAllFlightsOnDate);
+
+                    while(resultSet.next() != false) {
+                        //System.out.println(resultSet.getString("flight_number") + " " + resultSet.getString("plane_type") + " " + resultSet.getString("plane_capacity") + " " + resultSet.getString("weekly_schedule"));
+                        String findAllSeatsTakenPerFlightQuery = "SELECT flight_number, COUNT(flight_number) FROM RESERVATION_DETAIL rd GROUP BY rd.flight_number";
+
+                        seatsTakenResultSet = statement.executeQuery(findAllSeatsTakenPerFlightQuery);
+
+                        while(seatsTakenResultSet.next() != false) {
+                            if(resultSet.getString("flight_number").equals(seatsTakenResultSet.getString("flight_number")) && Integer.parseInt(seatsTakenResultSet.getString("taken_seats")) < Integer.parseInt(resultSet.getString("plane_capacity"))) {
+                                System.out.println(resultSet.getString("flight_number") + " " + resultSet.getString("departure_city") + " " + resultSet.getString("arrival_city") + " " + resultSet.getString("departure_time") + " " + resultSet.getString("arrival_time"));
+                            }
+
+                            //System.out.println(seatsTakenResultSet.getString("flight_number") + " " + seatsTakenResultSet.getString("taken_seats"));
+                        }                
+                    }
+                }  catch(SQLException sqle) {
+                    System.out.println("Result set failed");
+                    System.out.println(sqle.toString());
+                    sqle.printStackTrace();             
+                }            
+            } catch(ParseException pe) {
+                System.out.println("Parse exception.");
+                System.exit(1);
+            }
+        } catch(SQLException sqle) {
+            System.out.println("Result set failed");
+            System.out.println(sqle.toString());
+            sqle.printStackTrace();               
+        }
+    }
+
+    //does not work completely
+    public static void addReservation(Scanner s, Statement statement) {
+        ResultSet resultSet, resultSetTwo;
+        System.out.println("---------------");
+        String[] flights = new String[4];
+        String[] depDates = new String[4];
+        int tripLegs = 4;
+        int index = 0;
+
+        int allGoodReservations = 0;
+
+        while(tripLegs != 0 || !s.next().equals(0)) {
+            System.out.print("Flight Number: ");
+            flights[index] = s.next();
+            System.out.print("Departure Date: ");
+            depDates[index] = s.next();
+        }
+
+        for(int i = 0; i < flights.length; i++) {
+            String findBookedSeats = "SELECT flight_number, COUNT(flight_number) AS taken_seats FROM RESERVATION_DETAIL GROUP BY flight_number";
+            String findTotalSeats = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type";
+
+            try {
+                resultSet = statement.executeQuery(findBookedSeats);
+                resultSetTwo = statement.executeQuery(findTotalSeats);
+
+                while(resultSetTwo.next() != false) {
+                    while(resultSet.next() != false) {
+                        if(resultSet.getString("flight_number").equals(resultSetTwo.getString("flight_number")) && Integer.parseInt(resultSet.getString("taken_seats")) < Integer.parseInt(resultSetTwo.getString("plane_capacity"))) {
+                            allGoodReservations++;
+                        }
+                    }
+                }
+
+                if(allGoodReservations == flights.length) {
+                    //insert into reservation_detail and reservation 
+                }
+
+                else {
+                    System.out.println("Parts of this reservation request cannot be fulfilled.");
+                }
+            } catch(SQLException sqle) {
+                System.out.println("Result set failed");
+                System.out.println(sqle.toString());
+                sqle.printStackTrace();                   
+            }
+        }
+    }
+
+    public static void showReservationInfo(Scanner s, Statement statement) {
+        ResultSet resultSet;
+
+        System.out.println("---------------");
+        System.out.print("Reservation Number: ");
+        String reservationNum = s.next();   
+
+        String findReservationQuery = "SELECT * FROM RESERVATION_DETAIL WHERE reservation_number = '" + reservationNum + "'";
+
+        try {
+            resultSet = statement.executeQuery(findReservationQuery);
+
+            System.out.println("Reservation # | Flight # | Flight Date | Leg");
+            while(resultSet.next() != false) {
+                System.out.println("\t" + resultSet.getString("reservation_number") + "         " + resultSet.getString("flight_number") + "        " 
+                    + resultSet.getString("flight_date").substring(0,10) + "     " + resultSet.getString("leg"));
+            }
+        } catch(SQLException sqle) {
+            System.out.println("Result set failed");
+            System.out.println(sqle.toString());
+            sqle.printStackTrace();              
+        }
+    }
+
+    public static void buyTicket(Scanner s, Statement statement) {
+        ResultSet resultSet;
+
+        System.out.println("---------------");
+        System.out.print("Reservation Number: ");
+        String reservationNum = s.next();
+
+        String updateReservation = "UPDATE RESERVATION SET ticketed = 'Y' WHERE reservation_number = '" + reservationNum + "'";
+
+        try {
+            statement.executeUpdate(updateReservation);
+            System.out.println("Ticketing complete!");
+        } catch(SQLException sqle) {
+            System.out.println("Ticket update failed due to possible nonexistence of reservation");
+            System.out.println(sqle.toString());
+            sqle.printStackTrace();             
+        }
+    }
+
     public static void main (String[] args) {
         Connection connection;
         Statement statement = null;
@@ -398,6 +893,7 @@ public class PittTours {
 
         else if(choice == 2) {
             System.out.println("---------------");
+            System.out.println("Customer Interface");
             System.out.println("1) Add Customer");
             System.out.println("2) Show Customer Info");
             System.out.println("3) Find Flight Price Between Cities");
@@ -414,34 +910,35 @@ public class PittTours {
 
             switch (custInterfaceOption) {
                 case 1:
-                    newCustomer(s, statement);
+                    addNewCustomer(s, statement);
                     break;
                 case 2:
-
+                    showCustomerInfo(s, statement);
                     break;
                 case 3:
-
+                    findFlightPriceBetweenCities(s, statement);
                     break;
                 case 4:
-
+                    findAllRoutesBetweenCities(s, statement);
                     break;
                 case 5:
-
+                    findAirlineRoutesBetweenCities(s, statement);
                     break;
                 case 6:
-
+                    findAllRoutesBetweenCitiesWithAvailableSeats(s, statement);
                     break;
                 case 7:
-
+                    findAirlineRoutesBetweenCitiesWithAvailableSeats(s, statement);
                     break;
                 case 8:
-
+                    addReservation(s, statement);
                     break;
                 case 9:
-
+                    showReservationInfo(s, statement);
                     break;
                 case 10:
-                        
+                    buyTicket(s, statement);
+                    break;
                 case 11:
                     System.out.println("Thank you for using PittTours!");
                     System.exit(0);
