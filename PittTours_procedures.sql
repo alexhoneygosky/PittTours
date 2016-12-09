@@ -49,13 +49,13 @@ END;
 SHOW ERRORS;
 
 --Change price
-create or replace procedure change_price(depart IN varchar2, arrival IN varchar2,
+create or replace procedure change_price(depart IN varchar2, arrival IN varchar2, airline IN varchar2,
 high IN number, low IN number)
 as
 BEGIN
 	update Price
 	set high_price = high, low_price = low
-	where departure_city = depart and arrival_city = arrival;
+	where departure_city = depart and arrival_city = arrival and airline_id = airline;
 END;
 /
 SHOW ERRORS;
