@@ -331,7 +331,6 @@ public class PittTours {
 		"on R.reservation_number = Rd.reservation_number) Res\n"+
 		"where (Res.flight_number = '"+flightNum+ "' and Res.flight_date = to_Date('"+date+"','MM-DD-YYYY'))) RR\n"+
 		"on C.cid = RR.cid;");
-		System.out.println(query);
 		try{
 			rs = statement.executeQuery(query);
 			while(rs.next()){
