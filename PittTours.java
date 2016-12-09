@@ -240,11 +240,13 @@ public class PittTours {
 		String depart = s.nextLine();
 		System.out.println("\nEnter arrival city: ");
 		String arrival = s.nextLine();
+		System.out.println("\nEnter airline id: ");
+		String airline = s.nextLine();
 		System.out.println("\nEnter high price: ");
 		int high = s.nextInt();
 		System.out.println("\nEnter low price: ");
 		int low = s.nextInt();
-		String procedure = new String("EXEC change_price ('" + depart + "','" + arrival + "',"
+		String procedure = new String("EXEC change_price ('" + depart + "','" + arrival + "','" + airline + "',"
 		+ high + "," + low + " );");
 		//Update the table with new prices
 		try{
@@ -311,15 +313,32 @@ public class PittTours {
 	
 	//Administrator option to get manifest for a specific flight
 	public static void getManifest(Statement statement){
+		ResultSet rs;
 		Scanner s = new Scanner(System.in);
 		System.out.println("Get Manifest");
-		System.out.println("Enter the date (MM-DD-YY):");
+		System.out.println("Enter the date (MM-DD-YYYY):");
 		String date = s.next();
 		System.out.println("\nEnter the flight number:");
 		String flightNum = s.next();
-		String procedure = new String("EXEC get_manifest('"+flightNum+"',to_date('"+date+"','MM-DD-YYYY'));");
+		String query = new String("select C.salutation, C.first_name, C.last_name\n"+
+		"from Customer C\n"+
+		"join\n" +
+		"(select Res.cid\n"+
+		"from (select R.cid, Rd.flight_date, Rd.flight_number\n"+
+		"from Reservation R\n"+
+		"join\n"+
+		"Reservation_detail Rd\n"+
+		"on R.reservation_number = Rd.reservation_number) Res\n"+
+		"where (Res.flight_number = "+flightNum+ "and Res.flight_date = to_Date('"+date+"','MM-DD-YYYY'))) RR\n"+
+		"on C.cid = RR.cid;");
 		try{
-			statement.execute(procedure);
+			rs = statement.executeQuery(query);
+			while(rs.next()){
+				String salutation = rs.getString("salutation");
+				String f_name = rs.getString("first_name");
+				String l_name = rs.getString("last_name");
+				System.out.println(salutation + ". " + f_name + " " +l_name);
+			}
 		}
 		catch(SQLException sqle){
 			System.out.println("SQL Error");
@@ -832,7 +851,7 @@ public class PittTours {
             DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
             String url = "jdbc:oracle:thin:@class3.cs.pitt.edu:1521:dbclass"; 
         
-            connection = DriverManager.getConnection(url, "ard71", "fl@wl3ss"); 
+            connection = DriverManager.getConnection(url, "ach53", "drumline617+"); 
 
             statement = connection.createStatement();
         } catch(Exception Ex) {
