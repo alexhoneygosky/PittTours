@@ -564,8 +564,7 @@ public class PittTours {
         }
     }
 
-    //does not work completely
-    public static void findAllRoutesBetweenCitiesWithAvailableSeats(Scanner s, Statement statement) {
+    public static void findAllRoutesBetweenCitiesWithAvailableSeats(Scanner s, Statement statement, Statement statementTwo) {
         ResultSet resultSet, seatsTakenResultSet;
 
         System.out.println("---------------");
@@ -591,50 +590,56 @@ public class PittTours {
             String resFlightNum = "";
             int bookedSeats = 0;
 
-            if(dayOfWeek == 0) {
-                findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+            if(dayOfWeek == 1) {
+                findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type AND f.airline_id = p.owner_id WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
                     + " AND f.weekly_schedule LIKE 'S______'";
             }
-            else if(dayOfWeek == 1) {
-                findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+            else if(dayOfWeek == 2) {
+                findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type AND f.airline_id = p.owner_id WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
                     + " AND f.weekly_schedule LIKE '_M_____'";            
             }
-            else if(dayOfWeek == 2) {
-                findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+            else if(dayOfWeek == 3) {
+                findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type AND f.airline_id = p.owner_id WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
                     + " AND f.weekly_schedule LIKE '__T____'";               
             }
-            else if(dayOfWeek == 3) {
-                findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+            else if(dayOfWeek == 4) {
+                findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type AND f.airline_id = p.owner_id WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
                     + " AND f.weekly_schedule LIKE '___W___'";               
             }
-            else if(dayOfWeek == 4) {
-                findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+            else if(dayOfWeek == 5) {
+                findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type AND f.airline_id = p.owner_id WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
                     + " AND f.weekly_schedule LIKE '____T__'";               
             }
-            else if(dayOfWeek == 5) {
-                findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+            else if(dayOfWeek == 6) {
+                findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type AND f.airline_id = p.owner_id WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
                     + " AND f.weekly_schedule LIKE '_____F_'";               
             }
-            else if(dayOfWeek == 6) {
-                findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+            else if(dayOfWeek == 7) {
+                findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type AND f.airline_id = p.owner_id WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
                     + " AND f.weekly_schedule LIKE '______S'";               
             }
 
             try {
                 resultSet = statement.executeQuery(findAllFlightsOnDate);
 
-                while(resultSet.next() != false) {
-                    //System.out.println(resultSet.getString("flight_number") + " " + resultSet.getString("plane_type") + " " + resultSet.getString("plane_capacity") + " " + resultSet.getString("weekly_schedule"));
-                    String findAllSeatsTakenPerFlightQuery = "SELECT flight_number, COUNT(flight_number) FROM RESERVATION_DETAIL rd GROUP BY rd.flight_number";
+                System.out.println("Flight Number | Dep. City | Arr. City | Dep. Time | Arr. Time");
 
-                    seatsTakenResultSet = statement.executeQuery(findAllSeatsTakenPerFlightQuery);
+                while(resultSet.next() != false) {
+                    String fNum = resultSet.getString("flight_number");
+                    String depCity = resultSet.getString("departure_city");
+                    String arrCity = resultSet.getString("arrival_city");
+                    String depTime = resultSet.getString("departure_time");
+                    String arrTime = resultSet.getString("arrival_time");
+                    int capacity = Integer.parseInt(resultSet.getString("plane_capacity"));                    
+                    
+                    String findAllSeatsTakenPerFlightQuery = "SELECT rd.flight_number, COUNT(rd.flight_number) AS taken_seats FROM RESERVATION_DETAIL rd WHERE rd.flight_number = '" + resultSet.getString("flight_number") + "' GROUP BY rd.flight_number";
+
+                    seatsTakenResultSet = statementTwo.executeQuery(findAllSeatsTakenPerFlightQuery);
 
                     while(seatsTakenResultSet.next() != false) {
-                        if(resultSet.getString("flight_number").equals(seatsTakenResultSet.getString("flight_number")) && Integer.parseInt(seatsTakenResultSet.getString("taken_seats")) < Integer.parseInt(resultSet.getString("plane_capacity"))) {
-                            System.out.println(resultSet.getString("flight_number") + " " + resultSet.getString("departure_city") + " " + resultSet.getString("arrival_city") + " " + resultSet.getString("departure_time") + " " + resultSet.getString("arrival_time"));
+                        if(fNum.equals(seatsTakenResultSet.getString("flight_number")) && Integer.parseInt(seatsTakenResultSet.getString("taken_seats")) < capacity) {
+                            System.out.println("     " + fNum + "           " + depCity + "          " + arrCity + "       " + depTime + "        " + arrTime);
                         }
-
-                        //System.out.println(seatsTakenResultSet.getString("flight_number") + " " + seatsTakenResultSet.getString("taken_seats"));
                     }                
                 }
             }  catch(SQLException sqle) {
@@ -648,8 +653,7 @@ public class PittTours {
         }
     }
 
-    //does not work completely
-    public static void findAirlineRoutesBetweenCitiesWithAvailableSeats(Scanner s, Statement statement) {
+    public static void findAirlineRoutesBetweenCitiesWithAvailableSeats(Scanner s, Statement statement, Statement statementTwo) {
         ResultSet resultSet, seatsTakenResultSet;
         Scanner tempScanner = new Scanner(System.in).useDelimiter(" ");
 
@@ -688,50 +692,56 @@ public class PittTours {
                 String resFlightNum = "";
                 int bookedSeats = 0;
 
-                if(dayOfWeek == 0) {
-                    findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+                if(dayOfWeek == 1) {
+                    findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type AND f.airline_id = p.owner_id WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
                         + " AND f.airline_id = '" + airlineId + "' AND f.weekly_schedule LIKE 'S______'";
                 }
-                else if(dayOfWeek == 1) {
-                    findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+                else if(dayOfWeek == 2) {
+                    findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type AND f.airline_id = p.owner_id WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
                         + " AND f.airline_id = '" + airlineId + "' AND f.weekly_schedule LIKE '_M_____'";            
                 }
-                else if(dayOfWeek == 2) {
-                    findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+                else if(dayOfWeek == 3) {
+                    findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type AND f.airline_id = p.owner_id WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
                         + " AND f.airline_id = '" + airlineId + "' AND f.weekly_schedule LIKE '__T____'";               
                 }
-                else if(dayOfWeek == 3) {
-                    findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+                else if(dayOfWeek == 4) {
+                    findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type AND f.airline_id = p.owner_id WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
                         + " AND f.airline_id = '" + airlineId + "' AND f.weekly_schedule LIKE '___W___'";               
                 }
-                else if(dayOfWeek == 4) {
-                    findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+                else if(dayOfWeek == 5) {
+                    findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type AND f.airline_id = p.owner_id WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
                         + " AND f.airline_id = '" + airlineId + "' AND f.weekly_schedule LIKE '____T__'";               
                 }
-                else if(dayOfWeek == 5) {
-                    findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+                else if(dayOfWeek == 6) {
+                    findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type AND f.airline_id = p.owner_id WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
                         + " AND f.airline_id = '" + airlineId + "' AND f.weekly_schedule LIKE '_____F_'";               
                 }
-                else if(dayOfWeek == 6) {
-                    findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
+                else if(dayOfWeek == 7) {
+                    findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type AND f.airline_id = p.owner_id WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
                         + " AND f.airline_id = '" + airlineId + "' AND f.weekly_schedule LIKE '______S'";               
                 }
 
                 try {
                     resultSet = statement.executeQuery(findAllFlightsOnDate);
 
-                    while(resultSet.next() != false) {
-                        //System.out.println(resultSet.getString("flight_number") + " " + resultSet.getString("plane_type") + " " + resultSet.getString("plane_capacity") + " " + resultSet.getString("weekly_schedule"));
-                        String findAllSeatsTakenPerFlightQuery = "SELECT flight_number, COUNT(flight_number) FROM RESERVATION_DETAIL rd GROUP BY rd.flight_number";
+                    System.out.println("Airline Id | Flight Number | Dep. City | Arr. City | Dep. Time | Arr. Time");                    
 
-                        seatsTakenResultSet = statement.executeQuery(findAllSeatsTakenPerFlightQuery);
+                    while(resultSet.next() != false) {
+                        String fNum = resultSet.getString("flight_number");
+                        String depCity = resultSet.getString("departure_city");
+                        String arrCity = resultSet.getString("arrival_city");
+                        String depTime = resultSet.getString("departure_time");
+                        String arrTime = resultSet.getString("arrival_time");
+                        int capacity = Integer.parseInt(resultSet.getString("plane_capacity"));  
+
+                        String findAllSeatsTakenPerFlightQuery = "SELECT flight_number, COUNT(flight_number) AS taken_seats FROM RESERVATION_DETAIL rd GROUP BY rd.flight_number";
+
+                        seatsTakenResultSet = statementTwo.executeQuery(findAllSeatsTakenPerFlightQuery);
 
                         while(seatsTakenResultSet.next() != false) {
-                            if(resultSet.getString("flight_number").equals(seatsTakenResultSet.getString("flight_number")) && Integer.parseInt(seatsTakenResultSet.getString("taken_seats")) < Integer.parseInt(resultSet.getString("plane_capacity"))) {
-                                System.out.println(resultSet.getString("flight_number") + " " + resultSet.getString("departure_city") + " " + resultSet.getString("arrival_city") + " " + resultSet.getString("departure_time") + " " + resultSet.getString("arrival_time"));
+                            if(fNum.equals(seatsTakenResultSet.getString("flight_number")) && Integer.parseInt(seatsTakenResultSet.getString("taken_seats")) < capacity) {
+                                System.out.println("     " + airlineId + "           " + fNum + "           " + depCity + "          " + arrCity + "       " + depTime + "        " + arrTime);
                             }
-
-                            //System.out.println(seatsTakenResultSet.getString("flight_number") + " " + seatsTakenResultSet.getString("taken_seats"));
                         }                
                     }
                 }  catch(SQLException sqle) {
@@ -750,7 +760,6 @@ public class PittTours {
         }
     }
 
-    //does not work completely
     public static void addReservation(Scanner s, Statement statement) {
         ResultSet resultSet, resultSetTwo;
         System.out.println("---------------");
@@ -761,40 +770,551 @@ public class PittTours {
 
         int allGoodReservations = 0;
 
-        while(tripLegs != 0 || !s.next().equals(0)) {
+        while(tripLegs != 0) {
             System.out.print("Flight Number: ");
             flights[index] = s.next();
+            if(flights[index].equals("0")) {
+                flights[index] = null;
+                break;
+            }
             System.out.print("Departure Date: ");
             depDates[index] = s.next();
+
+            tripLegs--;
+            index++;
         }
 
+        System.out.print("Customer Id: ");
+        String custId = s.next();
+        System.out.print("Credit Card Number: ");
+        String ccn = s.next();
+
+        String startCity = "";
+        String endCity = "";
+        int[] canReserveFlight = new int[4];
+
+        int totalCost = 0;
+
         for(int i = 0; i < flights.length; i++) {
-            String findBookedSeats = "SELECT flight_number, COUNT(flight_number) AS taken_seats FROM RESERVATION_DETAIL GROUP BY flight_number";
-            String findTotalSeats = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type";
+            if(flights[i] == null) {
+                break;
+            }
+            else {
+                SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy");
+                
+                try {
+                    Date date = formatter.parse(depDates[i]);
 
-            try {
-                resultSet = statement.executeQuery(findBookedSeats);
-                resultSetTwo = statement.executeQuery(findTotalSeats);
+                    Calendar c = Calendar.getInstance();
+                    c.setTime(date);
+                    int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
 
-                while(resultSetTwo.next() != false) {
-                    while(resultSet.next() != false) {
-                        if(resultSet.getString("flight_number").equals(resultSetTwo.getString("flight_number")) && Integer.parseInt(resultSet.getString("taken_seats")) < Integer.parseInt(resultSetTwo.getString("plane_capacity"))) {
-                            allGoodReservations++;
+                    if(dayOfWeek == 1) {
+                        try {
+                            String determineFlightExistsSunday = "SELECT * FROM FLIGHT WHERE flight_number = '" + flights[i] + "' AND weekly_schedule LIKE 'S______'";
+
+                            ResultSet flightOnSunday = statement.executeQuery(determineFlightExistsSunday);
+
+                            if(flightOnSunday.next() == true) {
+                                if(i == 0) {
+                                    startCity = flightOnSunday.getString("departure_city");
+                                }
+
+                                if(flights[i + 1] == null || i == 3) {
+                                    endCity = flightOnSunday.getString("arrival_city");
+                                }
+
+                                String findTakenSeats = "SELECT flight_number, COUNT(flight_number) AS taken_seats FROM RESERVATION_DETAIL WHERE flight_number = '" 
+                                + flights[i] + "' AND flight_date = To_Date('" + depDates[i] + "', 'MM-dd-yyyy') GROUP BY flight_number";
+
+                                ResultSet flightCurrentCapacity = statement.executeQuery(findTakenSeats);
+
+                                int takenSeats = 0; 
+                                int totalSeats = 0;
+
+                                if(flightCurrentCapacity.next() == true) {
+                                    takenSeats = Integer.parseInt(flightCurrentCapacity.getString("taken_seats"));
+                                }
+
+                                String findTotalSeats = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.flight_number = '" + flights[i] + "'";
+                                
+                                ResultSet flightTotalCapacity = statement.executeQuery(findTotalSeats);
+
+                                if(flightTotalCapacity.next() == true) {
+                                    totalSeats = Integer.parseInt(flightTotalCapacity.getString("plane_capacity"));
+                                }
+
+                                if(takenSeats < totalSeats) {
+                                    canReserveFlight[i] = 1;
+
+                                    String airlineId = flightTotalCapacity.getString("airline_id");
+
+                                    String getAirlinePriceQuery = "SELECT * FROM PRICE WHERE airline_id = '" + airlineId + "'";
+
+                                    ResultSet airline = statement.executeQuery(getAirlinePriceQuery);
+                                    airline.next();
+
+                                    if(depDates[i].equals(depDates[i+1]) || depDates[i+1] == null) {
+                                        totalCost = totalCost + Integer.parseInt(airline.getString("high_price"));
+                                    }
+
+                                    else {
+                                        totalCost = totalCost + Integer.parseInt(airline.getString("low_price"));
+                                    }
+                                }
+
+                                else {
+                                    System.out.println("Sorry, this flight is full!");
+                                    System.exit(0);
+                                }
+                            }
+                        } catch(SQLException sqle) {
+                            System.out.println("Result set failed");
+                            System.out.println(sqle.toString());
+                            sqle.printStackTrace();                         
                         }
                     }
-                }
 
-                if(allGoodReservations == flights.length) {
-                    //insert into reservation_detail and reservation 
-                }
+                    else if(dayOfWeek == 2) {
+                        try {
+                            String determineFlightExistsMonday = "SELECT * FROM FLIGHT WHERE flight_number = '" + flights[i] + "' AND weekly_schedule LIKE '_M_____'";
 
-                else {
-                    System.out.println("Parts of this reservation request cannot be fulfilled.");
+                            ResultSet flightOnMonday = statement.executeQuery(determineFlightExistsMonday);
+
+                            if(flightOnMonday.next() == true) {
+                                if(i == 0) {
+                                    startCity = flightOnMonday.getString("departure_city");
+                                }
+
+                                if(flights[i + 1] == null || i == 3) {
+                                    endCity = flightOnMonday.getString("arrival_city");
+                                }                            
+
+                                String findTakenSeats = "SELECT flight_number, COUNT(flight_number) AS taken_seats FROM RESERVATION_DETAIL WHERE flight_number = '" 
+                                + flights[i] + "' AND flight_date = To_Date('" + depDates[i] + "', 'MM-dd-yyyy') GROUP BY flight_number";
+
+                                ResultSet flightCurrentCapacity = statement.executeQuery(findTakenSeats);
+                                
+                                int takenSeats = 0;
+                                int totalSeats = 0;
+                                
+                                if(flightCurrentCapacity.next() == true) {
+                                    takenSeats = Integer.parseInt(flightCurrentCapacity.getString("taken_seats"));
+                                }
+
+                                String findTotalSeats = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.flight_number = '" + flights[i] + "'";
+                                
+                                ResultSet flightTotalCapacity = statement.executeQuery(findTotalSeats);
+                                
+                                if(flightTotalCapacity.next() == true) {
+                                    totalSeats = Integer.parseInt(flightTotalCapacity.getString("plane_capacity"));
+                                }
+
+                                if(takenSeats < totalSeats) {
+                                    canReserveFlight[i] = 1;
+
+                                    String airlineId = flightTotalCapacity.getString("airline_id");
+
+                                    String getAirlinePriceQuery = "SELECT * FROM PRICE WHERE airline_id = '" + airlineId + "'";
+
+                                    ResultSet airline = statement.executeQuery(getAirlinePriceQuery);
+                                    airline.next();
+
+                                    if(depDates[i].equals(depDates[i+1]) || depDates[i+1] == null) {
+                                        totalCost = totalCost + Integer.parseInt(airline.getString("high_price"));
+                                    }
+
+                                    else {
+                                        totalCost = totalCost + Integer.parseInt(airline.getString("low_price"));
+                                    }                                    
+                                }
+
+                                else {
+                                    System.out.println("Sorry, this flight is full!");
+                                    System.exit(0);
+                                }                                
+                            }
+                        } catch(SQLException sqle) {
+                            System.out.println("Result set failed");
+                            System.out.println(sqle.toString());
+                            sqle.printStackTrace();                         
+                        }                    
+                    }
+
+                    else if(dayOfWeek == 3) {
+                        try {
+                            String determineFlightExistsTuesday = "SELECT * FROM FLIGHT WHERE flight_number = '" + flights[i] + "' AND weekly_schedule LIKE '__T____'";
+
+                            ResultSet flightOnTuesday = statement.executeQuery(determineFlightExistsTuesday);
+
+                            if(flightOnTuesday.next() == true) {
+                                if(i == 0) {
+                                    startCity = flightOnTuesday.getString("departure_city");
+                                }
+
+                                if(flights[i + 1] == null || i == 3) {
+                                    endCity = flightOnTuesday.getString("arrival_city");
+                                }                            
+
+                                String findTakenSeats = "SELECT flight_number, COUNT(flight_number) AS taken_seats FROM RESERVATION_DETAIL WHERE flight_number = '" 
+                                + flights[i] + "' AND flight_date = To_Date('" + depDates[i] + "', 'MM-dd-yyyy') GROUP BY flight_number";
+
+                                ResultSet flightCurrentCapacity = statement.executeQuery(findTakenSeats);
+                                
+                                int takenSeats = 0;
+                                int totalSeats = 0;
+                                
+                                if(flightCurrentCapacity.next() == true) {
+                                    takenSeats = Integer.parseInt(flightCurrentCapacity.getString("taken_seats"));
+                                }
+
+                                String findTotalSeats = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.flight_number = '" + flights[i] + "'";
+                                
+                                ResultSet flightTotalCapacity = statement.executeQuery(findTotalSeats);
+                                
+                                if(flightTotalCapacity.next() == true) {
+                                    totalSeats = Integer.parseInt(flightTotalCapacity.getString("plane_capacity"));
+                                }
+
+                                if(takenSeats < totalSeats) {
+                                    canReserveFlight[i] = 1;
+
+                                    String airlineId = flightTotalCapacity.getString("airline_id");
+
+                                    String getAirlinePriceQuery = "SELECT * FROM PRICE WHERE airline_id = '" + airlineId + "'";
+
+                                    ResultSet airline = statement.executeQuery(getAirlinePriceQuery);
+                                    airline.next();
+
+                                    if(depDates[i].equals(depDates[i+1]) || depDates[i+1] == null) {
+                                        totalCost = totalCost + Integer.parseInt(airline.getString("high_price"));
+                                    }
+
+                                    else {
+                                        totalCost = totalCost + Integer.parseInt(airline.getString("low_price"));
+                                    }                                    
+                                }
+
+                                else {
+                                    System.out.println("Sorry, this flight is full!");
+                                    System.exit(0);
+                                }                                
+                            }
+                        } catch(SQLException sqle) {
+                            System.out.println("Result set failed");
+                            System.out.println(sqle.toString());
+                            sqle.printStackTrace();                         
+                        }                    
+                    }
+
+                    else if(dayOfWeek == 4) {
+                        try {
+                            String determineFlightExistsWednesday = "SELECT * FROM FLIGHT WHERE flight_number = '" + flights[i] + "' AND weekly_schedule LIKE '___W___'";
+
+                            ResultSet flightOnWednesday = statement.executeQuery(determineFlightExistsWednesday);
+
+                            if(flightOnWednesday.next() == true) {
+                                if(i == 0) {
+                                    startCity = flightOnWednesday.getString("departure_city");
+                                }
+
+                                if(flights[i + 1] == null || i == 3) {
+                                    endCity = flightOnWednesday.getString("arrival_city");
+                                }                            
+
+                                String findTakenSeats = "SELECT flight_number, COUNT(flight_number) AS taken_seats FROM RESERVATION_DETAIL WHERE flight_number = '" 
+                                + flights[i] + "' AND flight_date = To_Date('" + depDates[i] + "', 'MM-dd-yyyy') GROUP BY flight_number";
+
+                                ResultSet flightCurrentCapacity = statement.executeQuery(findTakenSeats);
+                                
+                                int takenSeats = 0;
+                                int totalSeats = 0;
+                                
+                                if(flightCurrentCapacity.next() == true) {
+                                    takenSeats = Integer.parseInt(flightCurrentCapacity.getString("taken_seats"));
+                                }
+
+                                String findTotalSeats = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.flight_number = '" + flights[i] + "'";
+                                
+                                ResultSet flightTotalCapacity = statement.executeQuery(findTotalSeats);
+                                
+                                if(flightTotalCapacity.next() == true) {
+                                    totalSeats = Integer.parseInt(flightTotalCapacity.getString("plane_capacity"));
+                                }
+
+                                if(takenSeats < totalSeats) {
+                                    canReserveFlight[i] = 1;
+
+                                    String airlineId = flightTotalCapacity.getString("airline_id");
+
+                                    String getAirlinePriceQuery = "SELECT * FROM PRICE WHERE airline_id = '" + airlineId + "'";
+
+                                    ResultSet airline = statement.executeQuery(getAirlinePriceQuery);
+                                    airline.next();
+
+                                    if(depDates[i].equals(depDates[i+1]) || depDates[i+1] == null) {
+                                        totalCost = totalCost + Integer.parseInt(airline.getString("high_price"));
+                                    }
+
+                                    else {
+                                        totalCost = totalCost + Integer.parseInt(airline.getString("low_price"));
+                                    }                                    
+                                }
+
+                                else {
+                                    System.out.println("Sorry, this flight is full!");
+                                    System.exit(0);
+                                }                                
+                            }
+                        } catch(SQLException sqle) {
+                            System.out.println("Result set failed");
+                            System.out.println(sqle.toString());
+                            sqle.printStackTrace();                         
+                        }                    
+                    }
+
+                    else if(dayOfWeek == 5) {
+                        try {
+                            String determineFlightExistsThursday = "SELECT * FROM FLIGHT WHERE flight_number = '" + flights[i] + "' AND weekly_schedule LIKE '____T__'";
+
+                            ResultSet flightOnThursday = statement.executeQuery(determineFlightExistsThursday);
+
+                            if(flightOnThursday.next() == true) {
+                                if(i == 0) {
+                                    startCity = flightOnThursday.getString("departure_city");
+                                }
+
+                                if(flights[i + 1] == null || i == 3) {
+                                    endCity = flightOnThursday.getString("arrival_city");
+                                }                            
+
+                                String findTakenSeats = "SELECT flight_number, COUNT(flight_number) AS taken_seats FROM RESERVATION_DETAIL WHERE flight_number = '" 
+                                + flights[i] + "' AND flight_date = To_Date('" + depDates[i] + "', 'MM-dd-yyyy') GROUP BY flight_number";
+
+                                ResultSet flightCurrentCapacity = statement.executeQuery(findTakenSeats);
+                                
+                                int takenSeats = 0;
+                                int totalSeats = 0;
+                                
+                                if(flightCurrentCapacity.next() == true) {
+                                    takenSeats = Integer.parseInt(flightCurrentCapacity.getString("taken_seats"));
+                                }
+
+                                String findTotalSeats = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.flight_number = '" + flights[i] + "'";
+                                
+                                ResultSet flightTotalCapacity = statement.executeQuery(findTotalSeats);
+                                
+                                if(flightTotalCapacity.next() == true) {
+                                    totalSeats = Integer.parseInt(flightTotalCapacity.getString("plane_capacity"));
+                                }
+
+                                if(takenSeats < totalSeats) {
+                                    canReserveFlight[i] = 1;
+
+                                    String airlineId = flightTotalCapacity.getString("airline_id");
+
+                                    String getAirlinePriceQuery = "SELECT * FROM PRICE WHERE airline_id = '" + airlineId + "'";
+
+                                    ResultSet airline = statement.executeQuery(getAirlinePriceQuery);
+                                    airline.next();
+
+                                    if(depDates[i].equals(depDates[i+1]) || depDates[i+1] == null) {
+                                        totalCost = totalCost + Integer.parseInt(airline.getString("high_price"));
+                                    }
+
+                                    else {
+                                        totalCost = totalCost + Integer.parseInt(airline.getString("low_price"));
+                                    }                                    
+                                }
+
+                                else {
+                                    System.out.println("Sorry, this flight is full!");
+                                    System.exit(0);
+                                }                                
+                            }
+                        } catch(SQLException sqle) {
+                            System.out.println("Result set failed");
+                            System.out.println(sqle.toString());
+                            sqle.printStackTrace();                         
+                        }                    
+                    } 
+
+                    else if(dayOfWeek == 6) {
+                        try {
+                            String determineFlightExistsFriday = "SELECT * FROM FLIGHT WHERE flight_number = '" + flights[i] + "' AND weekly_schedule LIKE '_____F_'";
+
+                            ResultSet flightOnFriday = statement.executeQuery(determineFlightExistsFriday);
+
+                            if(flightOnFriday.next() == true) {
+                                if(i == 0) {
+                                    startCity = flightOnFriday.getString("departure_city");
+                                }
+
+                                if(flights[i + 1] == null || i == 3) {
+                                    endCity = flightOnFriday.getString("arrival_city");
+                                }                            
+
+                                String findTakenSeats = "SELECT flight_number, COUNT(flight_number) AS taken_seats FROM RESERVATION_DETAIL WHERE flight_number = '" 
+                                + flights[i] + "' AND flight_date = To_Date('" + depDates[i] + "', 'MM-dd-yyyy') GROUP BY flight_number";
+
+                                ResultSet flightCurrentCapacity = statement.executeQuery(findTakenSeats);
+                                
+                                int takenSeats = 0;
+                                int totalSeats = 0;
+                                
+                                if(flightCurrentCapacity.next() == true) {
+                                    takenSeats = Integer.parseInt(flightCurrentCapacity.getString("taken_seats"));
+                                }
+
+                                String findTotalSeats = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.flight_number = '" + flights[i] + "'";
+                                
+                                ResultSet flightTotalCapacity = statement.executeQuery(findTotalSeats);
+                                
+                                if(flightTotalCapacity.next() == true) {
+                                    totalSeats = Integer.parseInt(flightTotalCapacity.getString("plane_capacity"));
+                                }
+
+                                if(takenSeats < totalSeats) {
+                                    canReserveFlight[i] = 1;
+
+                                    String airlineId = flightTotalCapacity.getString("airline_id");
+
+                                    String getAirlinePriceQuery = "SELECT * FROM PRICE WHERE airline_id = '" + airlineId + "'";
+
+                                    ResultSet airline = statement.executeQuery(getAirlinePriceQuery);
+                                    airline.next();
+
+                                    if(depDates[i].equals(depDates[i+1]) || depDates[i+1] == null) {
+                                        totalCost = totalCost + Integer.parseInt(airline.getString("high_price"));
+                                    }
+
+                                    else {
+                                        totalCost = totalCost + Integer.parseInt(airline.getString("low_price"));
+                                    }                                    
+                                }
+
+                                else {
+                                    System.out.println("Sorry, this flight is full!");
+                                    System.exit(0);
+                                }                                
+                            }
+                        } catch(SQLException sqle) {
+                            System.out.println("Result set failed");
+                            System.out.println(sqle.toString());
+                            sqle.printStackTrace();                         
+                        }                    
+                    }
+
+                    else if(dayOfWeek == 7) {
+                        try {
+                            String determineFlightExistsSaturday = "SELECT * FROM FLIGHT WHERE flight_number = '" + flights[i] + "' AND weekly_schedule LIKE '______S'";
+
+                            ResultSet flightOnSaturday = statement.executeQuery(determineFlightExistsSaturday);
+
+                            if(flightOnSaturday.next() == true) {
+                                if(i == 0) {
+                                    startCity = flightOnSaturday.getString("departure_city");
+                                }
+
+                                if(flights[i + 1] == null || i == 3) {
+                                    endCity = flightOnSaturday.getString("arrival_city");
+                                }                            
+
+                                String findTakenSeats = "SELECT flight_number, COUNT(flight_number) AS taken_seats FROM RESERVATION_DETAIL WHERE flight_number = '" 
+                                + flights[i] + "' AND flight_date = To_Date('" + depDates[i] + "', 'MM-dd-yyyy') GROUP BY flight_number";
+
+                                ResultSet flightCurrentCapacity = statement.executeQuery(findTakenSeats);
+                                
+                                int takenSeats = 0;
+                                int totalSeats = 0;
+                                
+                                if(flightCurrentCapacity.next() == true) {
+                                    takenSeats = Integer.parseInt(flightCurrentCapacity.getString("taken_seats"));
+                                }
+
+                                String findTotalSeats = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type WHERE f.flight_number = '" + flights[i] + "'";
+                                
+                                ResultSet flightTotalCapacity = statement.executeQuery(findTotalSeats);
+                                
+                                if(flightTotalCapacity.next() == true) {
+                                    totalSeats = Integer.parseInt(flightTotalCapacity.getString("plane_capacity"));
+                                }
+
+                                if(takenSeats < totalSeats) {
+                                    canReserveFlight[i] = 1;
+
+                                    String airlineId = flightTotalCapacity.getString("airline_id");
+
+                                    String getAirlinePriceQuery = "SELECT * FROM PRICE WHERE airline_id = '" + airlineId + "'";
+
+                                    ResultSet airline = statement.executeQuery(getAirlinePriceQuery);
+                                    airline.next();
+
+                                    if(depDates[i].equals(depDates[i+1])) {
+                                        totalCost = totalCost + Integer.parseInt(airline.getString("high_price"));
+                                    }
+
+                                    else {
+                                        totalCost = totalCost + Integer.parseInt(airline.getString("low_price"));
+                                    }                                    
+                                }
+
+                                else {
+                                    System.out.println("Sorry, this flight is full!");
+                                    System.exit(0);
+                                }                                
+                            }                            
+                        } catch(SQLException sqle) {
+                            System.out.println("Result set failed");
+                            System.out.println(sqle.toString());
+                            sqle.printStackTrace();                         
+                        }                    
+                    }                                                                                                                     
+                } catch(ParseException pe) {
+                    System.out.println("Parse exception.");
+                    System.exit(1);
+                }
+            }
+        }
+
+        if(flights[0] != null) {
+            try {
+                String getAllReservationsQuery = "SELECT COUNT(reservation_number) AS total_reservations FROM RESERVATION";
+
+                ResultSet allReservationsResults = statement.executeQuery(getAllReservationsQuery);
+
+                allReservationsResults.next();
+
+                int totalReservations = Integer.parseInt(allReservationsResults.getString("total_reservations"));
+
+                int newReservation = totalReservations + 1;
+
+
+                DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");
+                Date date = new Date();
+                String today = dateFormat.format(date);
+
+                System.out.println(startCity);
+                System.out.println(endCity);
+
+                String addNewReservation = "INSERT INTO RESERVATION VALUES('" + newReservation + "', '" + custId + "', " + totalCost + ", '" + ccn + "', To_Date('" + today + "', 'MM-dd-yyyy'), 'N', '" + startCity + "', '" + endCity + "')";
+
+                statement.executeUpdate(addNewReservation);
+
+                System.out.println("Your reservation number is: " + newReservation);
+
+                for(int y = 0; y < canReserveFlight.length; y++) {
+                    if(flights[y] == null) {
+                        break;
+                    }
+
+                    String addNewResDetail = "INSERT INTO RESERVATION_DETAIL VALUES('" + newReservation + "', '" + flights[y] + "', To_Date('" + depDates[y] + "', 'MM-dd-yyyy'), " + y + ")";
+                    statement.executeUpdate(addNewResDetail);
                 }
             } catch(SQLException sqle) {
                 System.out.println("Result set failed");
                 System.out.println(sqle.toString());
-                sqle.printStackTrace();                   
+                sqle.printStackTrace();                 
             }
         }
     }
@@ -845,6 +1365,7 @@ public class PittTours {
     public static void main (String[] args) {
         Connection connection;
         Statement statement = null;
+        Statement statementTwo = null;
 
         try {
             Class.forName("oracle.jdbc.driver.OracleDriver");
@@ -854,6 +1375,7 @@ public class PittTours {
             connection = DriverManager.getConnection(url, "ach53", "drumline617+"); 
 
             statement = connection.createStatement();
+            statementTwo = connection.createStatement();
         } catch(Exception Ex) {
             System.out.println("Error connecting to database.  Machine Error: " +
             Ex.toString());
@@ -944,10 +1466,10 @@ public class PittTours {
                     findAirlineRoutesBetweenCities(s, statement);
                     break;
                 case 6:
-                    findAllRoutesBetweenCitiesWithAvailableSeats(s, statement);
+                    findAllRoutesBetweenCitiesWithAvailableSeats(s, statement, statementTwo);
                     break;
                 case 7:
-                    findAirlineRoutesBetweenCitiesWithAvailableSeats(s, statement);
+                    findAirlineRoutesBetweenCitiesWithAvailableSeats(s, statement, statementTwo);
                     break;
                 case 8:
                     addReservation(s, statement);
