@@ -77,18 +77,20 @@ public class PittTours {
     }
 
 	//Administrator option to erase entire database
-	public static void eraseDB(Statement statement){
+	public static boolean eraseDB(Statement statement){
 		System.out.println("Erasing database...");
 		String procedure = new String("EXEC erase_db;");
 		try{
 			statement.execute(procedure);
 			System.out.println("Finished.");
+			return true;
 		}
 		catch (SQLException sqle){
 			System.out.println("SQL Error");
             System.out.println(sqle.toString());
             sqle.printStackTrace();
 		}
+		return false;
 	}
 	
 	//Administrator option to load airline information from a file
@@ -131,6 +133,50 @@ public class PittTours {
 			System.out.println("SQL Error");
             System.out.println(sqle.toString());
             sqle.printStackTrace();		
+		}
+	}
+	
+	//Load airline method for driver
+	private boolean loadAirline(Statement statement, String file){
+		ResultSet rs;
+		String line = null;
+		try{
+			// Insert into database from file
+			FileReader fr = new FileReader(file);
+			BufferedReader br = new BufferedReader(fr);
+			while((line = br.readLine()) != null){
+				String[] tuple = line.split(",");
+				String procedure = new String("EXEC add_airline ('"+ tuple[0] + "','"+tuple[1]
+				+ "','" + tuple[2] + "'," + tuple[3] + ");");
+				statement.execute(procedure);
+			}
+			// Display table
+			String query = new String("SELECT * FROM AIRLINE;");
+			rs = statement.executeQuery(query);
+			System.out.println("Airlines");
+			System.out.println("Id\tName\tAbbreviation\tYear Founded");
+			while (rs.next()){
+				String id = rs.getString("airline_id");
+				String name = rs.getString("airline_name");
+				String abrv = rs.getString("airline_abbreviation");
+				int year = rs.getInt("year_founded");
+				System.out.println(id+"\t"+name+"\t"+abrv+"\t"+year);
+			}
+			return true;
+		}
+		catch (FileNotFoundException e){
+			System.out.println("ERROR: Unable to open file: "+file);
+			return false;
+		}
+		catch (IOException e){
+			System.out.println("ERROR: Unable to read file: "+file);
+			return false;
+		}
+		catch (SQLException sqle){
+			System.out.println("SQL Error");
+            System.out.println(sqle.toString());
+            sqle.printStackTrace();	
+            return false;	
 		}
 	}
 	
@@ -182,6 +228,57 @@ public class PittTours {
 			System.out.println("SQL Error");
             System.out.println(sqle.toString());
             sqle.printStackTrace();		
+		}
+	}
+	
+	private boolean loadSchedule(Statement statement, String file){
+		ResultSet rs;
+		String line = null;
+		try{
+			//Insert into db from file
+			FileReader fr = new FileReader(file);
+			BufferedReader br = new BufferedReader(fr);
+			while((line = br.readLine()) != null){
+				String[] tuple = line.split(",");
+				String procedure = new String("EXEC add_flight ('"+ tuple[0] + "','"+tuple[1]
+				+ "','" + tuple[2] + "','" + tuple[3] + "','" + tuple[4] + "','" + tuple[5]
+				+ "','" + tuple[6] + "','" + tuple[7] + "');");
+				statement.execute(procedure);
+			}
+			//Display db
+			String query = new String("SELECT * FROM FLIGHT;");
+			rs = statement.executeQuery(query);
+			System.out.println("Flights");
+			System.out.println("Flight Number\tAirline Id\tPlane Type\tDeparture City"+
+			"\tArrival City\tDeparture Time\tArrival Time\tWeekly Schedule");
+			while (rs.next()){
+				String fNum = rs.getString("flight_number");
+				String id = rs.getString("airline_id");
+				String plane = rs.getString("plane_type");
+				String dCity = rs.getString("departure_city");
+				String aCity = rs.getString("arrival_city");
+				String dTime = rs.getString("departure_time");
+				String aTime = rs.getString("arrival_time");
+				String schedule = rs.getString("weekly_schedule");
+
+				System.out.println(fNum+"\t"+id+"\t"+plane+"\t"+dCity + "\t" + aCity + "\t"
+				+ dTime + "\t" + aTime + "\t" + schedule);
+			}
+			return true;
+		}
+		catch (FileNotFoundException e){
+			System.out.println("ERROR: Unable to open file: "+file);
+			return false;
+		}
+		catch (IOException e){
+			System.out.println("ERROR: Unable to read file: "+file);
+			return false;
+		}
+		catch (SQLException sqle){
+			System.out.println("SQL Error");
+            System.out.println(sqle.toString());
+            sqle.printStackTrace();	
+            return false;	
 		}
 	}
 	
@@ -331,6 +428,7 @@ public class PittTours {
 		"on R.reservation_number = Rd.reservation_number) Res\n"+
 		"where (Res.flight_number = '"+flightNum+ "' and Res.flight_date = to_Date('"+date+"','MM-DD-YYYY'))) RR\n"+
 		"on C.cid = RR.cid;");
+		System.out.println(query);
 		try{
 			rs = statement.executeQuery(query);
 			while(rs.next()){
@@ -859,7 +957,12 @@ public class PittTours {
             Ex.toString());
             Ex.printStackTrace();
         }
-
+		if (args[0] = "-d"){
+			driver(statement);
+		}
+		else if (args[0] = "-b"){
+			benchmark(statement);
+		}
         Scanner s = new Scanner(System.in);
         
         System.out.println("Welcome to PittTours!");
@@ -963,5 +1066,56 @@ public class PittTours {
                     System.exit(0);
             }
         }
+    }
+    public static void driver(Statement statement){
+    	String airlines = new String("airlinesTest.csv");
+    	String planes = new String("planesTest.csv");
+    	String prices = new String("pricesTest.csv");
+    	String schedule = new String ("scheduleTest.csv");
+    	System.out.println("Testing Administrator Options");
+    	System.out.println("1. Erase the database");
+    	if(eraseDB(statement))
+    		System.out.println("Successful");
+    	else
+    		System.out.println("There is an error with erasing the database.");
+    		
+    	System.out.println("2. Load airline information from file");
+    	if (loadAirline(statement, airlines))
+    		System.out.println("Successful");
+    	else
+    		System.out.println("There is an error with loading airline info");
+    		
+    	System.out.println("3. Load plane information from file");
+    	if (loadPlane(statement, planes))
+    		System.out.println("Successful");
+    	else
+    		System.out.println("There is an error with loading plane info");
+    		
+    	System.out.println("4. Load schedule information from file");
+    	if (loadPlane(statement, schedule))
+    		System.out.println("Successful");
+    	else
+    		System.out.println("There is an error with loading schedule info");
+    	
+    	System.out.println("5. Load price information from file");
+    	if (loadPlane(statement, prices))
+    		System.out.println("Successful");
+    	else
+    		System.out.println("There is an error with loading price info");
+    		
+    	System.out.println("6. Change price");
+    	if (loadPlane(statement, planes))
+    		System.out.println("Successful");
+    	else
+    		System.out.println("There is an error with loading plane info");
+    		
+    	System.out.println("7. Get manifest");
+    	if (loadPlane(statement, prices))
+    		System.out.println("Successful");
+    	else
+    		System.out.println("There is an error with loading price info");
+    	
+    	System.exit(0);
+    	
     }
 }
