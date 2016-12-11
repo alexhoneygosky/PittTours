@@ -1,5 +1,17 @@
-//Alex Honeygosky (ach53), Ariella Hanna (ard71)
-//CS1555 PittTours
+/** Alex Honeygosky (ach53), Ariella Hanna (ard71)
+	CS1555 PittTours
+	
+	This interface allows both administrators and customers to interact with the PittTours
+	database.  It also has a driver and benchmark mode.
+	To use the driver, use command line argument "-d".
+	To use the benchmark, use command line argument "-b".
+	Any other command line argument will use the regular interface.
+	The interface allows the user to choose between administrator and customer.
+	
+	As an administrator, you can erase the database, load airline info from a file, load
+	plane info from a file, load schedule info from a file, load price info from a file,
+	change prices, and get passenger manifests.
+*/
 
 import java.io.*;
 import java.util.*;
@@ -2711,12 +2723,13 @@ public class PittTours {
             Ex.toString());
             Ex.printStackTrace();
         }
-		if (args.length >= 1 && args[0] == "-d"){
+		if (args.length >= 1 && args[0].equals("-d")){
 			driver(statement, statementTwo);
 		}
-		else if (args.length >= 1 && args[0] == "-b"){
+		else if (args.length >= 1 && args[0].equals("-b")){
 			benchmark(statement, statementTwo);
 		}
+		
         Scanner s = new Scanner(System.in);
         
         System.out.println("Welcome to PittTours!");
@@ -2821,6 +2834,8 @@ public class PittTours {
             }
         }
     }
+    
+    //Driver to test all functions
     public static void driver(Statement statement, Statement statementTwo){
     	//These are all test values that can be changed
     	String airlines = new String("airlinesTest.csv");
@@ -2961,12 +2976,229 @@ public class PittTours {
     		System.out.println("Successful");
     	else
     		System.out.println("There is an error buying a ticket");
-    	
+    		
+    		
+    	eraseDB(statement); //Clear database
     	System.exit(0);
     	
     }
     
+    //This benchmark test is similar to the driver, but has a lot more data and makes
+    //a lot more calls.  You can use your own sample data if you would like to do more or less
+    //tests as long as it is in the formats described above each filename.
     public static void  benchmark(Statement statement, Statement statementTwo){
+    	//These are all test values that can be changed
+    	
+    	//airline_id,name,abbreviation,year_founded
+    	String airlines = new String("airlinesBM.csv");
+    	//plane_type,manufacturer,capacity,date_serviced,year,owner_id
+    	String planes = new String("planeBM.csv");
+    	//departure_city,arrival_city,airline_id,high,low
+    	String prices = new String("priceBM.csv");
+    	//flight_number,airline_id,departure_city,arrival_city,departure_time,arrival_time,schedule
+    	String schedule = new String ("scheduleBM.csv");
+    	//salutation,first_name,last_name,credit card,cc_expiration date,street,city,state,phone,email
+    	String customers = new String("customerBM.csv");
+    	int low = 50;
+    	String stringDate = new String("12-12-2016");
+    	String[] flights = new String[] {"011"};
+    	String[] depDates = new String[]{"12-12-2016"};
+    	
+    	System.out.println("Clearing database for benchmark test");
+    	eraseDB(statement);
+    	
+    	System.out.println("Loading airline information");
+    	loadAirline(statement, airlines);
+    
+    	System.out.println("Loading plane information");
+    	loadPlane(statement, planes);
+    
+    	System.out.println("Loading schedule information");
+    	loadSchedule(statement, schedule);
+    	
+    	System.out.println("Loading price information");
+    	loadPrice(statement, prices);
+    	
+    	System.out.println("Changing low price of each flight to " +low);	
+		try{
+			String line = null;
+			FileReader fr = new FileReader(prices);
+			BufferedReader br = new BufferedReader(fr);
+			while((line = br.readLine()) != null){
+				String[] tuple = line.split(",");
+				changePrice(statement, tuple[0], tuple[1], tuple[2], Integer.parseInt(tuple[3]), low);
+			}
+    	}
+    	catch (IOException ioe){
+    		System.out.println("Unable to read file");
+    	}
+    		
+		System.out.println("Adding customers");
+		try{
+			String line = null;
+			FileReader fr = new FileReader(customers);
+			BufferedReader br = new BufferedReader(fr);
+			while((line = br.readLine()) != null){
+				String[] tuple = line.split(",");
+				addNewCustomer(statement, tuple[0], tuple[1], tuple[2], tuple[5], tuple[6], tuple[7],
+				tuple[8], tuple[9], tuple[3], tuple[4]);
+			}
+    	}
+    	catch (IOException ioe){
+    		System.out.println("Unable to read file");
+    	}
+    	
+    	System.out.println("Showing all customer info");
+    	try{
+			String line = null;
+			FileReader fr = new FileReader(customers);
+			BufferedReader br = new BufferedReader(fr);
+			while((line = br.readLine()) != null){
+				String[] tuple = line.split(",");
+				showCustomerInfo(statement, tuple[1], tuple[2]);
+			}
+    	}
+    	catch (IOException ioe){
+    		System.out.println("Unable to read file");
+    	}
+    	
+    	
+    		
+    		
+    	System.out.println("Finding flight price between all cities");
+    	try{
+			String line = null;
+			FileReader fr = new FileReader(prices);
+			BufferedReader br = new BufferedReader(fr);
+			while((line = br.readLine()) != null){
+				String[] tuple = line.split(",");
+				findFlightPriceBetweenCities(statement, tuple[0], tuple[1]);
+			}
+    	}
+    	catch (IOException ioe){
+    		System.out.println("Unable to read file");
+    	}
+    		
+    	System.out.println("Finding routes between all cities");
+    	try{
+			String line = null;
+			FileReader fr = new FileReader(prices);
+			BufferedReader br = new BufferedReader(fr);
+			while((line = br.readLine()) != null){
+				String[] tuple = line.split(",");
+				findAllRoutesBetweenCities(statement, tuple[0], tuple[1]);
+			}
+    	}
+    	catch (IOException ioe){
+    		System.out.println("Unable to read file");
+    	}
+    		
+    	System.out.println("Finding all routes between two cities on one airline");
+    	try{
+			String line = null;
+			FileReader fr = new FileReader(prices);
+			BufferedReader br = new BufferedReader(fr);
+			while((line = br.readLine()) != null){
+				String[] tuple = line.split(",");
+				findAirlineRoutesBetweenCities(statement, tuple[0], tuple[1], tuple[2]);
+			}
+    	}
+    	catch (IOException ioe){
+    		System.out.println("Unable to read file");
+    	}
+    	
+    		
+    	System.out.println("Finding all routes between cities with available seats on " + stringDate);
+    	try{
+			String line = null;
+			FileReader fr = new FileReader(prices);
+			BufferedReader br = new BufferedReader(fr);
+			while((line = br.readLine()) != null){
+				String[] tuple = line.split(",");
+				findAllRoutesBetweenCitiesWithAvailableSeats(statement,statementTwo, tuple[0], tuple[1], stringDate);
+			}
+    	}
+    	catch (IOException ioe){
+    		System.out.println("Unable to read file");
+    	}
+    	
+    		
+    	System.out.println("Finding all routes between cities on each airline with available seats on " + stringDate);
+    	try{
+			String line = null;
+			FileReader fr = new FileReader(prices);
+			BufferedReader br = new BufferedReader(fr);
+			while((line = br.readLine()) != null){
+				String[] tuple = line.split(",");
+				findAirlineRoutesBetweenCitiesWithAvailableSeats(statement,statementTwo, tuple[0], tuple[1], tuple[2], stringDate);
+			}
+    	}
+    	catch (IOException ioe){
+    		System.out.println("Unable to read file");
+    	}
+    	
+    	System.out.println("Adding reservations");
+    	try{
+			String line = null;
+			int count = 1;
+			FileReader fr = new FileReader(customers);
+			BufferedReader br = new BufferedReader(fr);
+			while((line = br.readLine()) != null){
+				String[] tuple = line.split(",");
+				addReservation(statement, flights, depDates, Integer.toString(count), tuple[3]);
+				count++;
+			}
+    	}
+    	catch (IOException ioe){
+    		System.out.println("Unable to read file");
+    	}
+    		
+    	System.out.println("Showing all reservation info");
+    	try{
+			String line = null;
+			int count = 1;
+			FileReader fr = new FileReader(customers);
+			BufferedReader br = new BufferedReader(fr);
+			while((line = br.readLine()) != null){
+				showReservationInfo(statement, Integer.toString(count));
+				count++;
+			}
+    	}
+    	catch (IOException ioe){
+    		System.out.println("Unable to read file");
+    	}
+	
+    	System.out.println("Buying all tickets");
+    	try{
+			String line = null;
+			int count = 1;
+			FileReader fr = new FileReader(customers);
+			BufferedReader br = new BufferedReader(fr);
+			while((line = br.readLine()) != null){
+				buyTicket(statement, Integer.toString(count));
+				count++;
+			}
+    	}
+    	catch (IOException ioe){
+    		System.out.println("Unable to read file");
+    	}
+    		
+    	System.out.println("Getting all manifests on " + stringDate);
+    	try{
+			String line = null;
+			FileReader fr = new FileReader(schedule);
+			BufferedReader br = new BufferedReader(fr);
+			while((line = br.readLine()) != null){
+				String[] tuple = line.split(",");
+				getManifest(statement, stringDate, tuple[0]);
+			}
+    	}
+    	catch (IOException ioe){
+    		System.out.println("Unable to read file");
+    	}
+    		
+    		
+    	eraseDB(statement); //Clear database
     	System.exit(0);
     }
 }
