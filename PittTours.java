@@ -1,3 +1,6 @@
+//Alex Honeygosky (ach53), Ariella Hanna (ard71)
+//CS1555 PittTours
+
 import java.io.*;
 import java.util.*;
 import java.util.Date;
@@ -11,9 +14,25 @@ public class PittTours {
 	//Administrator option to erase entire database
 	public static boolean eraseDB(Statement statement){
 		System.out.println("Erasing database...");
-		String procedure = new String("EXEC erase_db;");
+		String dropAirline = "DELETE FROM AIRLINE";
+        String dropFlight = "DELETE FROM FLIGHT";    
+        String dropPlane = "DELETE FROM PLANE";
+        String dropPrice = "DELETE FROM PRICE";
+        String dropCustomer = "DELETE FROM CUSTOMER";
+        String dropReservation = "DELETE FROM RESERVATION";
+        String dropDetails = "DELETE FROM RESERVATION_DETAIL";
+        String dropTime = "DELETE FROM OUR_DATE";
+
 		try{
-			statement.execute(procedure);
+			statement.executeUpdate(dropAirline);
+            statement.executeUpdate(dropFlight);
+            statement.executeUpdate(dropPlane);
+            statement.executeUpdate(dropPrice);
+            statement.executeUpdate(dropCustomer);
+            statement.executeUpdate(dropReservation);
+            statement.executeUpdate(dropDetails);
+            statement.executeUpdate(dropTime);
+
 			System.out.println("Finished.");
 			return true;
 		}
@@ -38,12 +57,14 @@ public class PittTours {
 			BufferedReader br = new BufferedReader(fr);
 			while((line = br.readLine()) != null){
 				String[] tuple = line.split(",");
-				String procedure = new String("EXEC add_airline ('"+ tuple[0] + "','"+tuple[1]
-				+ "','" + tuple[2] + "'," + tuple[3] + ");");
-				statement.execute(procedure);
+				//String procedure = new String("EXEC add_airline ('"+ tuple[0] + "','"+tuple[1]
+				//+ "','" + tuple[2] + "'," + tuple[3] + ");");
+
+                String procedure = "INSERT INTO AIRLINE VALUES('" + tuple[0] + "', '" + tuple[1] + "', '" + tuple[2] + "', " + tuple[3] + ")";
+				statement.executeUpdate(procedure);
 			}
 			// Display table
-			String query = new String("SELECT * FROM AIRLINE;");
+			String query = new String("SELECT * FROM AIRLINE");
 			rs = statement.executeQuery(query);
 			System.out.println("Airlines");
 			System.out.println("Id\tName\tAbbreviation\tYear Founded");
@@ -78,12 +99,14 @@ public class PittTours {
 			BufferedReader br = new BufferedReader(fr);
 			while((line = br.readLine()) != null){
 				String[] tuple = line.split(",");
-				String procedure = new String("EXEC add_airline ('"+ tuple[0] + "','"+tuple[1]
-				+ "','" + tuple[2] + "'," + tuple[3] + ");");
-				statement.execute(procedure);
+				//String procedure = new String("EXEC add_airline ('"+ tuple[0] + "','"+tuple[1]
+				//+ "','" + tuple[2] + "'," + tuple[3] + ");");
+
+                String procedure = "INSERT INTO AIRLINE VALUES('" + tuple[0] + "', '" + tuple[1] + "', '" + tuple[2] + "', " + tuple[3] + ")";
+				statement.executeUpdate(procedure);
 			}
 			// Display table
-			String query = new String("SELECT * FROM AIRLINE;");
+			String query = new String("SELECT * FROM AIRLINE");
 			rs = statement.executeQuery(query);
 			System.out.println("Airlines");
 			System.out.println("Id\tName\tAbbreviation\tYear Founded");
@@ -125,13 +148,15 @@ public class PittTours {
 			BufferedReader br = new BufferedReader(fr);
 			while((line = br.readLine()) != null){
 				String[] tuple = line.split(",");
-				String procedure = new String("EXEC add_flight ('"+ tuple[0] + "','"+tuple[1]
-				+ "','" + tuple[2] + "','" + tuple[3] + "','" + tuple[4] + "','" + tuple[5]
-				+ "','" + tuple[6] + "','" + tuple[7] + "');");
-				statement.execute(procedure);
+				// String procedure = new String("EXEC add_flight ('"+ tuple[0] + "','"+tuple[1]
+				// + "','" + tuple[2] + "','" + tuple[3] + "','" + tuple[4] + "','" + tuple[5]
+				// + "','" + tuple[6] + "','" + tuple[7] + "');");
+
+                String procedure = "INSERT INTO FLIGHT VALUES('" + tuple[0] + "', '" + tuple[1] + "', '" + tuple[2] + "', '" + tuple[3] + "', '" + tuple[4] + "', '" + tuple[5] + "', '" + tuple[6] + "', '" + tuple[7] + "')";
+				statement.executeUpdate(procedure);
 			}
 			//Display db
-			String query = new String("SELECT * FROM FLIGHT;");
+			String query = new String("SELECT * FROM FLIGHT");
 			rs = statement.executeQuery(query);
 			System.out.println("Flights");
 			System.out.println("Flight Number\tAirline Id\tPlane Type\tDeparture City"+
@@ -173,13 +198,15 @@ public class PittTours {
 			BufferedReader br = new BufferedReader(fr);
 			while((line = br.readLine()) != null){
 				String[] tuple = line.split(",");
-				String procedure = new String("EXEC add_flight ('"+ tuple[0] + "','"+tuple[1]
-				+ "','" + tuple[2] + "','" + tuple[3] + "','" + tuple[4] + "','" + tuple[5]
-				+ "','" + tuple[6] + "','" + tuple[7] + "');");
-				statement.execute(procedure);
+				// String procedure = new String("EXEC add_flight ('"+ tuple[0] + "','"+tuple[1]
+				// + "','" + tuple[2] + "','" + tuple[3] + "','" + tuple[4] + "','" + tuple[5]
+				// + "','" + tuple[6] + "','" + tuple[7] + "');");
+
+                String procedure = "INSERT INTO FLIGHT VALUES('" + tuple[0] + "', '" + tuple[1] + "', '" + tuple[2] + "', '" + tuple[3] + "', '" + tuple[4] + "', '" + tuple[5] + "', '" + tuple[6] + "', '" + tuple[7] + "')";                
+				statement.executeUpdate(procedure);
 			}
 			//Display db
-			String query = new String("SELECT * FROM FLIGHT;");
+			String query = new String("SELECT * FROM FLIGHT");
 			rs = statement.executeQuery(query);
 			System.out.println("Flights");
 			System.out.println("Flight Number\tAirline Id\tPlane Type\tDeparture City"+
@@ -228,12 +255,14 @@ public class PittTours {
 			BufferedReader br = new BufferedReader(fr);
 			while((line = br.readLine()) != null){
 				String[] tuple = line.split(",");
-				String procedure = new String("EXEC add_price ('"+ tuple[0] + "','"+tuple[1]
-				+ "','" + tuple[2] + "'," + tuple[3] + "," + tuple[4] + ");");
-				statement.execute(procedure);
+				// String procedure = new String("EXEC add_price ('"+ tuple[0] + "','"+tuple[1]
+				// + "','" + tuple[2] + "'," + tuple[3] + "," + tuple[4] + ");");
+
+                String procedure = "INSERT INTO PRICE VALUES('" + tuple[0] + "', '" + tuple[1] + "', '" + tuple[2] + "', " + tuple[3] + ", " + tuple[4] + ")";
+				statement.executeUpdate(procedure);
 			}
 			// Display db
-			String query = new String("SELECT * FROM PRICE;");
+			String query = new String("SELECT * FROM PRICE");
 			rs = statement.executeQuery(query);
 			System.out.println("Prices");
 			System.out.println("Departure City\tArrival City\tAirline Id\tHigh Price\tLow Price");
@@ -270,12 +299,14 @@ public class PittTours {
 			BufferedReader br = new BufferedReader(fr);
 			while((line = br.readLine()) != null){
 				String[] tuple = line.split(",");
-				String procedure = new String("EXEC add_price ('"+ tuple[0] + "','"+tuple[1]
-				+ "','" + tuple[2] + "'," + tuple[3] + "," + tuple[4] + ");");
-				statement.execute(procedure);
+				// String procedure = new String("EXEC add_price ('"+ tuple[0] + "','"+tuple[1]
+				// + "','" + tuple[2] + "'," + tuple[3] + "," + tuple[4] + ");");
+
+                String procedure = "INSERT INTO PRICE VALUES('" + tuple[0] + "', '" + tuple[1] + "', '" + tuple[2] + "', " + tuple[3] + ", " + tuple[4] + ")";                
+				statement.executeUpdate(procedure);
 			}
 			// Display db
-			String query = new String("SELECT * FROM PRICE;");
+			String query = new String("SELECT * FROM PRICE");
 			rs = statement.executeQuery(query);
 			System.out.println("Prices");
 			System.out.println("Departure City\tArrival City\tAirline Id\tHigh Price\tLow Price");
@@ -322,13 +353,15 @@ public class PittTours {
 		int high = s.nextInt();
 		System.out.println("\nEnter low price: ");
 		int low = s.nextInt();
-		String procedure = new String("EXEC change_price ('" + depart + "','" + arrival + "','" + airline + "',"
-		+ high + "," + low + " );");
+		// String procedure = new String("EXEC change_price ('" + depart + "','" + arrival + "','" + airline + "',"
+		// + high + "," + low + " );");
+
+        String procedure = "UPDATE PRICE SET high_price = " + high + ", low_price = " + low + " WHERE departure_city = '" + depart + "' AND arrival_city = '" + arrival + "' AND airline_id = '" + airline + "'";
 		//Update the table with new prices
 		try{
-			statement.execute(procedure);	
+			statement.executeUpdate(procedure);	
 			String confirmPriceChange = new String("SELECT * FROM PRICE WHERE DEPARTURE_CITY = '" 
-			+ depart + "' AND ARRIVAL_CITY = '"+arrival+"';");
+			+ depart + "' AND ARRIVAL_CITY = '"+arrival+"'");
             resultSet = statement.executeQuery(confirmPriceChange);
             if(resultSet.next() == true) {
             	System.out.println("Price successfully updated.");
@@ -344,13 +377,15 @@ public class PittTours {
 	//Testing method for change price that doesn't take input
 	public static boolean changePrice(Statement statement, String d_city, String a_city, String a_id, int high, int low){
 		ResultSet resultSet;
-		String procedure = new String("EXEC change_price ('" + d_city + "','" + a_city + "','" + a_id + "',"
-		+ high + "," + low + " );");
+		// String procedure = new String("EXEC change_price ('" + d_city + "','" + a_city + "','" + a_id + "',"
+		// + high + "," + low + " );");
+
+        String procedure = "UPDATE PRICE SET high_price = " + high + ", low_price = " + low + " WHERE departure_city = '" + d_city + "' AND arrival_city = '" + a_city + "' AND airline_id = '" + a_id + "'";        
 		//Update the table with new prices
 		try{
-			statement.execute(procedure);	
+			statement.executeUpdate(procedure);	
 			String confirmPriceChange = new String("SELECT * FROM PRICE WHERE DEPARTURE_CITY = '" 
-			+ d_city + "' AND ARRIVAL_CITY = '"+a_city+"';");
+			+ d_city + "' AND ARRIVAL_CITY = '"+a_city+"'");
             resultSet = statement.executeQuery(confirmPriceChange);
             if(resultSet.next() == true) {
             	System.out.println("Price successfully updated.");
@@ -378,12 +413,14 @@ public class PittTours {
 			BufferedReader br = new BufferedReader(fr);
 			while((line = br.readLine()) != null){
 				String[] tuple = line.split(",");
-				String procedure = new String("EXEC add_plane ('"+ tuple[0] + "','"+tuple[1]
-				+ "'," + tuple[2] + ",to_date('" + tuple[3] + "','MM-DD-YYYY')," + tuple[4] + ",'" + tuple[5] + "');");
-				statement.execute(procedure);
+				// String procedure = new String("EXEC add_plane ('"+ tuple[0] + "','"+tuple[1]
+				// + "'," + tuple[2] + ",to_date('" + tuple[3] + "','MM-DD-YYYY')," + tuple[4] + ",'" + tuple[5] + "');");
+
+                String procedure = "INSERT INTO PLANE VALUES('" + tuple[0] + "', '" + tuple[1] + "', " + tuple[2] + ", To_Date('" + tuple[3] + "', 'MM-DD-YYYY'), " + tuple[4] + ", '" + tuple[5] + "')";                                
+				statement.executeUpdate(procedure);
 			}
 			//Display db
-			String query = new String("SELECT * FROM PLANE;");
+			String query = new String("SELECT * FROM PLANE");
 			rs = statement.executeQuery(query);
 			System.out.println("Planes");
 			System.out.println("Type\tManufacturer\tCapacity\tLast Service Date\tYear\tOwner Id");
@@ -421,12 +458,14 @@ public class PittTours {
 			BufferedReader br = new BufferedReader(fr);
 			while((line = br.readLine()) != null){
 				String[] tuple = line.split(",");
-				String procedure = new String("EXEC add_plane ('"+ tuple[0] + "','"+tuple[1]
-				+ "'," + tuple[2] + ",to_date('" + tuple[3] + "','MM-DD-YYYY')," + tuple[4] + ",'" + tuple[5] + "');");
-				statement.execute(procedure);
+				// String procedure = new String("EXEC add_plane ('"+ tuple[0] + "','"+tuple[1]
+				// + "'," + tuple[2] + ",to_date('" + tuple[3] + "','MM-DD-YYYY')," + tuple[4] + ",'" + tuple[5] + "');");
+
+                String procedure = "INSERT INTO PLANE VALUES('" + tuple[0] + "', '" + tuple[1] + "', " + tuple[2] + ", To_Date('" + tuple[3] + "', 'MM-DD-YYYY'), " + tuple[4] + ", '" + tuple[5] + "')";                                                
+				statement.executeUpdate(procedure);
 			}
 			//Display db
-			String query = new String("SELECT * FROM PLANE;");
+			String query = new String("SELECT * FROM PLANE");
 			rs = statement.executeQuery(query);
 			System.out.println("Planes");
 			System.out.println("Type\tManufacturer\tCapacity\tLast Service Date\tYear\tOwner Id");
@@ -477,7 +516,7 @@ public class PittTours {
 		"Reservation_detail Rd\n"+
 		"on R.reservation_number = Rd.reservation_number) Res\n"+
 		"where (Res.flight_number = '"+flightNum+ "' and Res.flight_date = to_Date('"+date+"','MM-DD-YYYY'))) RR\n"+
-		"on C.cid = RR.cid;");
+		"on C.cid = RR.cid");
 		System.out.println(query);
 		try{
 			rs = statement.executeQuery(query);
@@ -508,7 +547,7 @@ public class PittTours {
 		"Reservation_detail Rd\n"+
 		"on R.reservation_number = Rd.reservation_number) Res\n"+
 		"where (Res.flight_number = '"+flightNum+ "' and Res.flight_date = to_Date('"+date+"','MM-DD-YYYY'))) RR\n"+
-		"on C.cid = RR.cid;");
+		"on C.cid = RR.cid");
 		try{
 			rs = statement.executeQuery(query);
 			while(rs.next()){
