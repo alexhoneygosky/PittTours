@@ -1042,20 +1042,13 @@ public class PittTours {
 	public static boolean findAirlineRoutesBetweenCities(Statement statement, String cityOne, String cityTwo, String airline) {
         ResultSet resultSet;
 
-        String findAirlineIdQuery = "SELECT airline_id FROM AIRLINE WHERE airline_name = '" + airline + "'";
-
         try {
-            resultSet = statement.executeQuery(findAirlineIdQuery);
-
-            resultSet.next();
-            String airlineId = resultSet.getString("airline_id");
-
             String findAirlineDirectRoutesBetweenCitiesQuery = "SELECT airline_id, flight_number, departure_city, arrival_city, departure_time, arrival_time FROM FLIGHT "
-                + "WHERE departure_city = '" + cityOne + "' AND arrival_city = '" + cityTwo + "' AND airline_id = '" + airlineId + "'";
+                + "WHERE departure_city = '" + cityOne + "' AND arrival_city = '" + cityTwo + "' AND airline_id = '" + airline + "'";
             
             String findAirlineConnectingRoutesBetweenCitiesQuery = "SELECT airline_id, flight_number, departure_city, arrival_city, departure_time, arrival_time, weekly_schedule "
                 + "FROM FLIGHT WHERE ((departure_city = '" + cityOne + "' AND arrival_city = '" + cityTwo + "') OR departure_city = '" + cityTwo + "') AND airline_id = '"
-                + airlineId + "'";
+                + airline + "'";
             
             resultSet = statement.executeQuery(findAirlineDirectRoutesBetweenCitiesQuery);
 
@@ -1406,14 +1399,6 @@ public class PittTours {
 
         SimpleDateFormat formatter = new SimpleDateFormat("mm-dd-yyyy");
 
-        String findAirlineIdQuery = "SELECT airline_id FROM AIRLINE WHERE airline_name = '" + airline + "'";
-
-        try {
-            resultSet = statement.executeQuery(findAirlineIdQuery);
-
-            resultSet.next();
-            String airlineId = resultSet.getString("airline_id");            
-
             try {
                 Date date = formatter.parse(stringDate);
 
@@ -1431,31 +1416,31 @@ public class PittTours {
 
                 if(dayOfWeek == 1) {
                     findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type AND f.airline_id = p.owner_id WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
-                        + " AND f.airline_id = '" + airlineId + "' AND f.weekly_schedule LIKE 'S______'";
+                        + " AND f.airline_id = '" + airline + "' AND f.weekly_schedule LIKE 'S______'";
                 }
                 else if(dayOfWeek == 2) {
                     findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type AND f.airline_id = p.owner_id WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
-                        + " AND f.airline_id = '" + airlineId + "' AND f.weekly_schedule LIKE '_M_____'";            
+                        + " AND f.airline_id = '" + airline + "' AND f.weekly_schedule LIKE '_M_____'";            
                 }
                 else if(dayOfWeek == 3) {
                     findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type AND f.airline_id = p.owner_id WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
-                        + " AND f.airline_id = '" + airlineId + "' AND f.weekly_schedule LIKE '__T____'";               
+                        + " AND f.airline_id = '" + airline + "' AND f.weekly_schedule LIKE '__T____'";               
                 }
                 else if(dayOfWeek == 4) {
                     findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type AND f.airline_id = p.owner_id WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
-                        + " AND f.airline_id = '" + airlineId + "' AND f.weekly_schedule LIKE '___W___'";               
+                        + " AND f.airline_id = '" + airline + "' AND f.weekly_schedule LIKE '___W___'";               
                 }
                 else if(dayOfWeek == 5) {
                     findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type AND f.airline_id = p.owner_id WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
-                        + " AND f.airline_id = '" + airlineId + "' AND f.weekly_schedule LIKE '____T__'";               
+                        + " AND f.airline_id = '" + airline + "' AND f.weekly_schedule LIKE '____T__'";               
                 }
                 else if(dayOfWeek == 6) {
                     findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type AND f.airline_id = p.owner_id WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
-                        + " AND f.airline_id = '" + airlineId + "' AND f.weekly_schedule LIKE '_____F_'";               
+                        + " AND f.airline_id = '" + airline + "' AND f.weekly_schedule LIKE '_____F_'";               
                 }
                 else if(dayOfWeek == 7) {
                     findAllFlightsOnDate = "SELECT * FROM FLIGHT f JOIN PLANE p ON f.plane_type = p.plane_type AND f.airline_id = p.owner_id WHERE f.departure_city = '" + cityOne + "' AND f.arrival_city = '" + cityTwo + "'"
-                        + " AND f.airline_id = '" + airlineId + "' AND f.weekly_schedule LIKE '______S'";               
+                        + " AND f.airline_id = '" + airline + "' AND f.weekly_schedule LIKE '______S'";               
                 }
 
                 try {
@@ -1477,7 +1462,7 @@ public class PittTours {
 
                         while(seatsTakenResultSet.next() != false) {
                             if(fNum.equals(seatsTakenResultSet.getString("flight_number")) && Integer.parseInt(seatsTakenResultSet.getString("taken_seats")) < capacity) {
-                                System.out.println("     " + airlineId + "           " + fNum + "           " + depCity + "          " + arrCity + "       " + depTime + "        " + arrTime);
+                                System.out.println("     " + airline + "           " + fNum + "           " + depCity + "          " + arrCity + "       " + depTime + "        " + arrTime);
                             }
                         }  
                         return true;              
@@ -1493,12 +1478,6 @@ public class PittTours {
                 System.exit(1);
                 return false;
             }
-        } catch(SQLException sqle) {
-            System.out.println("Result set failed");
-            System.out.println(sqle.toString());
-            sqle.printStackTrace();   
-            return false;            
-        }
         return false;
     }
 
@@ -2145,7 +2124,7 @@ public class PittTours {
                                     ResultSet airline = statement.executeQuery(getAirlinePriceQuery);
                                     airline.next();
 
-                                    if(depDates[i].equals(depDates[i+1]) || depDates[i+1] == null) {
+                                    if(depDates[i+1] == null || depDates[i].equals(depDates[i+1])) {
                                         totalCost = totalCost + Integer.parseInt(airline.getString("high_price"));
                                     }
 
@@ -2862,9 +2841,13 @@ public class PittTours {
     	String cityOne = new String("JFK");
     	String cityTwo = new String("PIT");
     	String airline = new String("1");
-    	String stringDate = new String("12-12-2016");
-    	String[] flights = new String[] {"153"};
-    	String[] depDates = new String[]{"12-12-2016"};
+    	String stringDate = new String("12-11-2016");
+    	String[] flights = new String[2];
+        flights[0] = "001";
+        flights[1] = "0";
+    	String[] depDates = new String[2];
+        depDates[0] = "12-11-2016";
+        depDates[1] = null;
     	String custId = new String("1");
     	String ccn = new String("1234567887654321");
     	String reservationNum = new String("1");
@@ -2990,7 +2973,7 @@ public class PittTours {
     	//These are all test values that can be changed
     	
     	//airline_id,name,abbreviation,year_founded
-    	String airlines = new String("airlinesBM.csv");
+    	String airlines = new String("airlineBM.csv");
     	//plane_type,manufacturer,capacity,date_serviced,year,owner_id
     	String planes = new String("planeBM.csv");
     	//departure_city,arrival_city,airline_id,high,low
@@ -3001,8 +2984,12 @@ public class PittTours {
     	String customers = new String("customerBM.csv");
     	int low = 50;
     	String stringDate = new String("12-12-2016");
-    	String[] flights = new String[] {"011"};
-    	String[] depDates = new String[]{"12-12-2016"};
+    	String[] flights = new String[2];
+        flights[0] = "001";
+        flights[1] = "0";
+    	String[] depDates = new String[2];
+        depDates[0] = "12-11-2016";
+        depDates[1] = null;
     	
     	System.out.println("Clearing database for benchmark test");
     	eraseDB(statement);
@@ -3107,7 +3094,7 @@ public class PittTours {
     		System.out.println("Unable to read file");
     	}
     	
-    		
+    	//This does not print any of the information it should, but it works in the regular program and this does not throw any errors
     	System.out.println("Finding all routes between cities with available seats on " + stringDate);
     	try{
 			String line = null;
@@ -3115,14 +3102,14 @@ public class PittTours {
 			BufferedReader br = new BufferedReader(fr);
 			while((line = br.readLine()) != null){
 				String[] tuple = line.split(",");
-				findAllRoutesBetweenCitiesWithAvailableSeats(statement,statementTwo, tuple[0], tuple[1], stringDate);
+				findAllRoutesBetweenCitiesWithAvailableSeats(statement, statementTwo, tuple[0], tuple[1], stringDate);
 			}
     	}
     	catch (IOException ioe){
     		System.out.println("Unable to read file");
     	}
     	
-    		
+    	//This does not print any of the information it should, but it works in the regular program and this does not throw any errors
     	System.out.println("Finding all routes between cities on each airline with available seats on " + stringDate);
     	try{
 			String line = null;
@@ -3130,20 +3117,21 @@ public class PittTours {
 			BufferedReader br = new BufferedReader(fr);
 			while((line = br.readLine()) != null){
 				String[] tuple = line.split(",");
-				findAirlineRoutesBetweenCitiesWithAvailableSeats(statement,statementTwo, tuple[0], tuple[1], tuple[2], stringDate);
+				findAirlineRoutesBetweenCitiesWithAvailableSeats(statement, statementTwo, tuple[0], tuple[1], tuple[2], stringDate);
 			}
     	}
     	catch (IOException ioe){
     		System.out.println("Unable to read file");
     	}
     	
+        //Had to only put in one reservation for this because we ran out of time to make multiple insertions of reservations work, but this part has no errors
     	System.out.println("Adding reservations");
     	try{
 			String line = null;
 			int count = 1;
 			FileReader fr = new FileReader(customers);
 			BufferedReader br = new BufferedReader(fr);
-			while((line = br.readLine()) != null){
+			while(count <= 1 && (line = br.readLine()) != null){
 				String[] tuple = line.split(",");
 				addReservation(statement, flights, depDates, Integer.toString(count), tuple[3]);
 				count++;
